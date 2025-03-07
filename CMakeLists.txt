@@ -31,17 +31,11 @@ include(cmake/CompilerWarnings.cmake)
 # Include the solver headers
 include_directories(include)
 
-# Subdirectory for the shared library
+# Subdirectory for all of the shared functionality
 add_subdirectory(lib)
 
-# Subdirectories for executable
+# Subdirectory for solver implementations
 add_subdirectory(src)
 
-# Optional: Set build type to Release for performance
-# set(CMAKE_BUILD_TYPE Release)
-
-# Optional: Enable CUDA if needed
-# find_package(CUDA REQUIRED)
-# if(CUDA_FOUND)
-#     enable_language(CUDA)
-# endif()
+# Subdirectory for command line application
+add_subdirectory(cli)

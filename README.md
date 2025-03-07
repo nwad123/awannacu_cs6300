@@ -28,8 +28,8 @@ cmake ..
 cmake --build .
 ```
 
-## Running
+## Running The Command Line Application
 
 ```sh
-./build/src/main
+./build/cli/main
 ```
