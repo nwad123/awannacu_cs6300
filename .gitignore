@@ -1,3 +1,8 @@
+## Environment files
+.vscode/*
+.venv/*
+.env/*
+
 ## CMake Files to Ignore
 build/*
 .cache/*
