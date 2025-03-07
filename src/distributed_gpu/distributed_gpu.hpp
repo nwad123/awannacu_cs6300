@@ -1,6 +1,6 @@
 #pragma once
 
-#include "solver/concepts.hpp"
+#include "core.hpp"
 #include <string_view>
 
 class DistributedGPU
