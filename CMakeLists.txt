@@ -25,15 +25,17 @@ FetchContent_MakeAvailable(fmt)
 # Turn on compile commands for IDE support
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Add detailed compiler warnings
+include(cmake/CompilerWarnings.cmake)
+
+# Include the solver headers
+include_directories(include)
+
 # Subdirectory for the shared library
 add_subdirectory(lib)
 
-# Subdirectories for implementations
-add_subdirectory(src/serial)
-add_subdirectory(src/parallel_cpu)
-add_subdirectory(src/parallel_gpu)
-add_subdirectory(src/distributed_cpu)
-add_subdirectory(src/distributed_gpu)
+# Subdirectories for executable
+add_subdirectory(src)
 
 # Optional: Set build type to Release for performance
 # set(CMAKE_BUILD_TYPE Release)
