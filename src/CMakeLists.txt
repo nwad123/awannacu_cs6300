@@ -8,4 +8,5 @@ set(SOLVERS
 add_library(solvers STATIC ${SOLVERS})
 target_include_directories(solvers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(solvers PRIVATE fmt::fmt)
+target_link_libraries(solvers PRIVATE shared_lib)
 target_project_warnings(solvers)
