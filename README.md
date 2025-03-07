@@ -41,7 +41,7 @@ line application.
 
 ## Project Layout
 
-Directories:
+### Directories
 
 - [`lib`](./lib/): A shared static library that stores all of the code shared between
   all solvers. Input parsing, the `Solver` concept, and basic datatypes are examples of
