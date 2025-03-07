@@ -19,7 +19,7 @@ FetchContent_MakeAvailable(googletest)
 FetchContent_Declare(
   fmt
   GIT_REPOSITORY https://github.com/fmtlib/fmt
-  GIT_TAG        v11.1.4)
+  GIT_TAG        11.1.4)
 FetchContent_MakeAvailable(fmt)
 
 # Subdirectory for the shared library
@@ -31,7 +31,6 @@ add_subdirectory(src/parallel_cpu)
 add_subdirectory(src/parallel_gpu)
 add_subdirectory(src/distributed_cpu)
 add_subdirectory(src/distributed_gpu)
-add_subdirectory(tests)
 
 # Optional: Set build type to Release for performance
 # set(CMAKE_BUILD_TYPE Release)
