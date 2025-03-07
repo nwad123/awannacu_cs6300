@@ -12,6 +12,5 @@ auto print_names([[maybe_unused]] S... solvers)
 auto main() -> int
 {
     shared();
-    fmt::println("Hello main!");
     print_names(Serial{}, ParallelCPU{}, ParallelGPU{}, DistributedCPU{}, DistributedGPU{});
 }
