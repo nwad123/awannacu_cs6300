@@ -22,6 +22,9 @@ FetchContent_Declare(
   GIT_TAG        11.1.4)
 FetchContent_MakeAvailable(fmt)
 
+# Turn on compile commands for IDE support
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Subdirectory for the shared library
 add_subdirectory(lib)
 
