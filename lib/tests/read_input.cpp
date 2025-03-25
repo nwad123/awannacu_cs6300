@@ -10,14 +10,14 @@
 
 TEST(ReadInputTest, ValidFile) {
     std::filesystem::path testFile = "__test__.raw";
-    std::vector<uint16_t> expectedData = {1, 2, 3, 4, 5};
+    std::vector<int16_t> expectedData = {1, 2, 3, 4, 5};
 
     {
         std::ofstream outFile(testFile, std::ios::binary);
         outFile.write(reinterpret_cast<const char*>(expectedData.data()), expectedData.size() * sizeof(uint16_t));
     }
 
-    std::vector<uint16_t> actualData = read_input(testFile);
+    std::vector<int16_t> actualData = read_input(testFile);
     EXPECT_EQ(actualData, expectedData);
 
     std::filesystem::remove(testFile);
@@ -28,11 +28,11 @@ TEST(ReadInputTest, InvalidExtension) {
 
     {
         std::ofstream outFile(testFile, std::ios::binary);
-        uint16_t testData[] = {1, 2, 3};
+        int16_t testData[] = {1, 2, 3};
         outFile.write(reinterpret_cast<const char*>(testData), sizeof(testData));
     }
 
-    std::vector<uint16_t> actualData = read_input(testFile);
+    std::vector<int16_t> actualData = read_input(testFile);
     EXPECT_TRUE(actualData.empty());
 
     std::filesystem::remove(testFile);
@@ -43,7 +43,7 @@ TEST(ReadInputTest, EmptyFile) {
     std::ofstream outFile(testFile);
     outFile.close();
 
-    std::vector<uint16_t> actualData = read_input(testFile);
+    std::vector<int16_t> actualData = read_input(testFile);
     EXPECT_TRUE(actualData.empty());
 
     std::filesystem::remove(testFile);
@@ -57,7 +57,7 @@ TEST(ReadInputTest, InvalidFileSize) {
         outFile.write(reinterpret_cast<const char*>(invalidData), sizeof(invalidData));
     }
 
-    std::vector<uint16_t> actualData = read_input(testFile);
+    std::vector<int16_t> actualData = read_input(testFile);
     EXPECT_TRUE(actualData.empty());
 
     std::filesystem::remove(testFile);
@@ -66,7 +66,7 @@ TEST(ReadInputTest, InvalidFileSize) {
 TEST(ReadInputTest, NonExistentFile){
     std::filesystem::path testFile = "__does_not_exist__.raw";
 
-    std::vector<uint16_t> actualData = read_input(testFile);
+    std::vector<int16_t> actualData = read_input(testFile);
     EXPECT_TRUE(actualData.empty());
 
 }
