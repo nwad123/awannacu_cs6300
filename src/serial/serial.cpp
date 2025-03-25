@@ -1,11 +1,9 @@
 #include "serial.hpp"
 #include "core.hpp"
 
-using point3_index = vec3<int64_t>;
-
 /// Returns 'true' when the points are visible to each other
 [[nodiscard]] 
-auto check_visibility(const data_type data, const point3_index p1, const point3_index p2) -> bool;
+auto check_visibility(const data_type data, const index3 p1, const index3 p2) -> bool;
 
 auto Serial::solve(const data_type data, const index3 at) -> output_type
 {
@@ -24,7 +22,7 @@ auto Serial::solve(const data_type data, const index3 at) -> output_type
     return {};
 }
 
-auto check_visibility(const data_type data, const point3_index p1, const point3_index p2) -> bool
+auto check_visibility(const data_type data, const index3 p1, const index3 p2) -> bool
 {
     const auto delta = (p2 - p1);
     const auto delta_abs = abs(delta);
