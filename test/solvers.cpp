@@ -5,14 +5,21 @@
 #include "basic_images.hpp"
 #include <gtest/gtest.h>
 #include <fmt/core.h>
+#include <fmt/ranges.h>
 #include <filesystem>
 #include <ranges>
 
 using namespace std::views;
 
 // ------ Test Images -----
-const auto [flat_plane_storage, flat_plane] = detail::flat_plane_fn<10, 10>();
-const auto [sloped_plane_storage, sloped_plane] = detail::sloped_plane_fn<10, 10>(1, 1);
+constexpr auto W = 10;
+constexpr auto H = 10;
+
+auto flat_plane_storage = detail::flat_plane_fn<W, H>();
+auto flat_plane = Kokkos::mdspan(flat_plane_storage.data(), W, H); 
+
+auto sloped_plane_storage = detail::sloped_plane_fn<W, H>(1, 1);
+auto sloped_plane = Kokkos::mdspan(sloped_plane_storage.data(), W, H); 
 
 // ------ Test Functions -----
 template<Solver ...S>
