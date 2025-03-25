@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bool.hpp"
 #include "vec3.hpp"
 #include "mdspan.hpp"
 #include <filesystem>
