@@ -17,7 +17,7 @@ using mat_2d_i16 = Kokkos::mdspan<int16_t, mat_2d_exts>;
 using data_type = mat_2d_i16;
 // TODO: check if we can actually use std::vector<bool> or not
 // Also, we probably just want to use `mdspan`?
-using output_type = std::vector<bool>;
+using output_type = std::vector<Bool>;
 
 
 // ----------- Functions -----------
