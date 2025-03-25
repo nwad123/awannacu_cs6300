@@ -18,18 +18,22 @@ build: build_dir
 build_dir:
 	@mkdir -p ${BUILD_PATH}
 
+# Clean out directories
 .PHONY: clean 
 clean:
 	@rm -rf ${BUILD_PATH}
 
+# Run all tests
 .PHONY: test 
 test: build 
 	cd ${BUILD_PATH}; ctest 
 
+# Run solver tests
 .PHONY: test_solvers 
 test_solvers: build 
 	cd ${BUILD_PATH}/test; ctest
 
+# Run shared lib tests
 .PHONY: test_lib
 test_lib: build 
 	cd ${BUILD_PATH}/lib/tests; ctest
