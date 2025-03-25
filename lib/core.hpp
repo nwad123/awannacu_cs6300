@@ -1,8 +1,22 @@
 #pragma once
 
 #include "solver/concepts.hpp"
+#include <concepts>
 #include <filesystem>
 
+// ----------- Data Structures -----------
+template<typename T>
+    requires std::integral<T> || std::floating_point<T>
+struct vec3 {
+   T x{0}; 
+   T y{0}; 
+   T z{0}; 
+};
+
+using vec3_fp32 = vec3<float>;
+using vec3_i32 = vec3<int32_t>;
+
+// ----------- Functions -----------
 auto shared() -> void;
 
 /// Reads the input file in the given format.
