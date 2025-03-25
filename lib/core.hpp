@@ -8,6 +8,7 @@
 using vec3_fp32 = vec3<float>;
 using vec3_i16 = vec3<int16_t>;
 using vec3_i32 = vec3<int32_t>;
+using index3 = vec3<size_t>;
 
 using mat_2d_exts = Kokkos::dextents<size_t, 2>;
 using mat_2d_i16 = Kokkos::mdspan<int16_t, mat_2d_exts>;
