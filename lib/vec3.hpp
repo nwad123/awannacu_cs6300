@@ -67,8 +67,4 @@ struct vec3 {
             .z = std::abs(initial.z)
         };
     }
-
-    constexpr auto abs() {
-        *this = abs(*this);
-    }   
 };

@@ -9,7 +9,4 @@ concept Solver =
 requires(S& s, const data_type data, const index3 point) {
     { S::name } -> std::convertible_to<const std::string_view>;
     { s.solve(data, point) } -> std::same_as<output_type>;
-} || requires(S& s, const std::span<int16_t> data, const index3 point) {
-    { S::name } -> std::convertible_to<const std::string_view>;
-    { s.solve(data, point) } -> std::same_as<output_type>;
 };
