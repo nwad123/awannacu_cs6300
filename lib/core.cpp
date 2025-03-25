@@ -8,10 +8,10 @@ auto shared() -> void
     fmt::println("I'm a shared library function!");
 }
 
-auto read_input(const std::filesystem::path input_file) -> std::vector<uint16_t>
+auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>
 {
     // set up an empty vector to store the data 
-    std::vector<uint16_t> input_data;
+    std::vector<int16_t> input_data;
     
     // check that the file is valid
     if (input_file.extension() != ".raw") {
@@ -47,7 +47,7 @@ auto read_input(const std::filesystem::path input_file) -> std::vector<uint16_t>
 
     // If the file size is not a multiple of uint16_t's then we have a problem 
     // we also have a problem if the file is empty
-    if (file_size % sizeof(uint16_t) != 0 || file_size == 0) {
+    if (file_size % sizeof(int16_t) != 0 || file_size == 0) {
         fmt::println("Input file {} opened, but has an invalid size!", input_file.string());
         return input_data;
     }
@@ -63,4 +63,16 @@ auto read_input(const std::filesystem::path input_file) -> std::vector<uint16_t>
 
     // return our data
     return input_data;
+}
+
+auto format_input(std::span<int16_t> input_data, 
+                  const size_t width, 
+                  const size_t length) -> mat_2d_i16
+{
+    if (width * length != input_data.size()) {
+        fmt::println("Input size mismatch!");
+        return {};
+    }
+
+    return Kokkos::mdspan(input_data.data(), width, length);
 }
