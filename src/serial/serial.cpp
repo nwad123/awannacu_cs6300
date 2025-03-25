@@ -15,7 +15,7 @@ auto Serial::solve(const data_type data) -> output_type
 
     // allocate some space for the output 
     constexpr uint8_t TRUE = 1;
-    constexpr uint8_t FALSE = 1;
+    constexpr uint8_t FALSE = 0;
     std::vector<uint8_t> output_vec(width * height, FALSE);
 
     // make a little wrapper for the output with a span 
