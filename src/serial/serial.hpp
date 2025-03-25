@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core.hpp"
+#include "solver/concepts.hpp"
 #include <string_view>
 
 class Serial

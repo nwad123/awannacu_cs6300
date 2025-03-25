@@ -1,10 +1,8 @@
 #pragma once
 
-#include "solver/concepts.hpp"
 #include "vec3.hpp"
-#include <concepts>
-#include <filesystem>
 #include "mdspan.hpp"
+#include <filesystem>
 
 // ----------- Data Structures -----------
 using vec3_fp32 = vec3<float>;
