@@ -7,6 +7,7 @@ struct vec3 {
     T y{0};
     T z{0};
 
+    // ----- All Arithmetic Function implemented by AI -----
     constexpr vec3 operator+(const vec3& other) const {
         return {x + other.x, y + other.y, z + other.z};
     }
@@ -54,4 +55,5 @@ struct vec3 {
     constexpr friend vec3 operator/(const T& scalar, const vec3& v) {
         return {scalar/v.x, scalar/v.y, scalar/v.z};
     }
+    // ----- End AI implementations -----
 };
