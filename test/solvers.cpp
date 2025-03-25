@@ -22,5 +22,5 @@ auto print_names([[maybe_unused]] S... solvers)
 // ------ Tests -----
 TEST(Serial, FlatPlane) {
     Serial serial;
-    auto output = serial.solve(flat_plane, {5, 5, 5});
+    auto output = serial.solve(flat_plane, {5, 5});
 }

@@ -1,5 +1,8 @@
+#pragma once
+
 #include <concepts>
 #include <cmath>
+#include "vec3.hpp"
 
 // DISCLAIMER: I gave my vec3 implementation to Gemini, and I told it to write
 // this for me.
@@ -66,4 +69,13 @@ struct vec2 {
             .y = std::abs(initial.y)
         };
     }
+    
+    constexpr vec3<T> to_vec3(const T z) const {
+        return { 
+            .x = x, 
+            .y = y,
+            .z = z
+        };
+    }
+
 };

@@ -1,3 +1,5 @@
+#pragma once
+
 // C++ literally has the worst std::vector implementation, because we can't 
 // pass it between devices because it doesn't technically have an address 
 // because it's really a bit-packed field.

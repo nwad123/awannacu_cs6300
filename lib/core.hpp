@@ -2,14 +2,16 @@
 
 #include "bool.hpp"
 #include "vec3.hpp"
+#include "vec2.hpp"
 #include "mdspan.hpp"
 #include <filesystem>
 
 // ----------- Data Structures -----------
-using vec3_fp32 = vec3<float>;
 using vec3_i16 = vec3<int16_t>;
-using vec3_i32 = vec3<int32_t>;
 using index3 = vec3<int64_t>;
+
+using vec2_i16 = vec2<int16_t>;
+using index2 = vec2<int64_t>;
 
 using mat_2d_exts = Kokkos::dextents<size_t, 2>;
 using mat_2d_i16 = Kokkos::mdspan<int16_t, mat_2d_exts>;
@@ -32,7 +34,9 @@ auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>;
 /// Formats the input into a nice 2-dimensional format
 ///
 /// If we had C++23 we could use std::mdspan, but alas we are as 
-/// beggars in this world and must satisfy ourselves with C++20.
+/// beggars in this world and must satisfy ourselves with C++20. Luckily
+/// Kokkos made a C++20 compatible version of std::mdspan that we'll 
+/// use.
 ///
 /// @param input_data A span over the input data. The input data must be 
 ///                   contiguous in memory and of uint16_t type.

@@ -7,7 +7,7 @@
 [[nodiscard]] 
 auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool;
 
-auto Serial::solve(const data_type data, const index3 at) -> output_type
+auto Serial::solve(const data_type data, const index2 at) -> output_type
 {
     using namespace std::views;
 
@@ -21,11 +21,14 @@ auto Serial::solve(const data_type data, const index3 at) -> output_type
     // make a little wrapper for the output with a span 
     auto output = Kokkos::mdspan(output_vec.data(), data.extents());
 
+    // get the starting location
+    const auto from = at.to_vec3(data(at.x, at.y));
+
     // check visibility of each point to each other point 
     for (const auto x : iota(0) | take(width)) {
         for (const auto y : iota(0) | take(height)) {
             const auto z = data(x, y);
-            output(x, y) = check_visibility(data, at, {x, y, z});
+            output(x, y) = check_visibility(data, from, {x, y, z});
         }
     }
 
