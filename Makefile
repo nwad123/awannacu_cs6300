@@ -21,3 +21,7 @@ build_dir:
 .PHONY: clean 
 clean:
 	@rm -rf ${BUILD_PATH}
+
+.PHONY: test_lib
+test_lib: build 
+	cd ${BUILD_PATH}/lib/tests; ctest
