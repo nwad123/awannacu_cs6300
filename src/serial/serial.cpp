@@ -7,7 +7,7 @@ using point3_index = vec3<int64_t>;
 [[nodiscard]] 
 auto check_visibility(const data_type data, const point3_index p1, const point3_index p2) -> bool;
 
-auto Serial::solve(const data_type data) -> output_type
+auto Serial::solve(const data_type data, const index3 at) -> output_type
 {
     // get the height and width of the input data 
     const auto width = data.extent(0);
