@@ -12,6 +12,12 @@ using vec3_i32 = vec3<int32_t>;
 using mat_2d_exts = Kokkos::dextents<size_t, 2>;
 using mat_2d_i16 = Kokkos::mdspan<int16_t, mat_2d_exts>;
 
+using data_type = mat_2d_i16;
+// TODO: check if we can actually use std::vector<bool> or not
+// Also, we probably just want to use `mdspan`?
+using output_type = std::vector<bool>;
+
+
 // ----------- Functions -----------
 auto shared() -> void;
 
