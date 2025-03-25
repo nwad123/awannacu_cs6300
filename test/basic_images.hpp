@@ -15,6 +15,7 @@ template<size_t W, size_t H>
 [[nodiscard]]
 constexpr auto flat_plane_fn() -> std::pair<std::array<int16_t, W*H>, mat_2d_i16> {
     auto arr = std::array<int16_t, W*H>{};
+    arr.fill(0);
     auto span = mat_2d_i16(arr.data(), W, H);
 
     return {arr, span};
