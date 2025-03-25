@@ -10,3 +10,4 @@ function(add_test TESTNAME)
 endfunction()
 
 add_test(read_input read_input.cpp)
+add_test(vec3 vec3.cpp)
