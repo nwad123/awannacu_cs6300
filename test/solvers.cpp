@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
+#include <fmt/color.h>
 #include <filesystem>
 #include <ranges>
 
@@ -44,7 +45,10 @@ TEST(Serial, FlatPlane) {
     for (const auto y : iota(0) | take(map.extent(1))) {
         fmt::print("{:<2}", y);
         for (const auto x : iota(0) | take(map.extent(0))) {
-            fmt::print("{}", map(x, y) ? "X " : "  ");
+            if (x == 5 && y == 5)
+                fmt::print(fg(fmt::color::red), "{}", map(x, y) ? "X " : "  ");
+            else 
+                fmt::print("{}", map(x, y) ? "X " : "  ");
         }
         fmt::println("");
     }
