@@ -22,6 +22,14 @@ build_dir:
 clean:
 	@rm -rf ${BUILD_PATH}
 
+.PHONY: test 
+test: build 
+	cd ${BUILD_PATH}; ctest 
+
+.PHONY: test_solvers 
+test_solvers: build 
+	cd ${BUILD_PATH}/test; ctest
+
 .PHONY: test_lib
 test_lib: build 
 	cd ${BUILD_PATH}/lib/tests; ctest

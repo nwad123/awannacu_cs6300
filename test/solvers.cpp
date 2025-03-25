@@ -1,6 +1,9 @@
 #include "solvers.hpp"
 #include "core.hpp"
+#include "solver/concepts.hpp"
+#include <gtest/gtest.h>
 #include <fmt/core.h>
+#include <filesystem>
 
 template<Solver ...S>
 auto print_names([[maybe_unused]] S... solvers)
@@ -9,8 +12,6 @@ auto print_names([[maybe_unused]] S... solvers)
     (fmt::println(" - {}", S::name), ...);
 }
 
-auto main() -> int
-{
-    shared();
-    print_names(Serial{}, ParallelCPU{}, ParallelGPU{}, DistributedCPU{}, DistributedGPU{});
+TEST(Serial, OriginalTest) {
+    std::filesystem::path("__temp__.raw");
 }

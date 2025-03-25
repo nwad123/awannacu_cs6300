@@ -1,13 +1,4 @@
-enable_testing()
+set(LINKED_TO fmt::fmt shared_lib)
 
-include(GoogleTest)
-
-function(add_test TESTNAME)
-    add_executable(${TESTNAME} ${ARGN})
-    target_link_libraries(${TESTNAME} gtest gtest_main shared_lib fmt::fmt)
-    
-    gtest_discover_tests(${TESTNAME})
-endfunction()
-
-add_test(read_input read_input.cpp)
-add_test(vec3 vec3.cpp)
+new_test(read_input read_input.cpp ${LINKED_TO})
+new_test(vec3 vec3.cpp ${LINKED_TO})

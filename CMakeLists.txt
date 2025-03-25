@@ -28,6 +28,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Add detailed compiler warnings
 include(cmake/CompilerWarnings.cmake)
 
+# Include the `add_test` function and enable testing functionality
+enable_testing()
+include(GoogleTest)
+include(cmake/TestFunction.cmake)
+
 # Include the solver headers
 include_directories(include)
 
@@ -39,3 +44,6 @@ add_subdirectory(src)
 
 # Subdirectory for command line application
 add_subdirectory(cli)
+
+# Subdirectory for tests 
+add_subdirectory(test)
