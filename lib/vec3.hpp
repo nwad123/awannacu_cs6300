@@ -4,6 +4,8 @@
 template<typename T>
 requires std::integral<T> || std::floating_point<T>
 struct vec3 {
+    using value_type = T;
+
     T x{0};
     T y{0};
     T z{0};
