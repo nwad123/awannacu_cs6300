@@ -1,4 +1,5 @@
 #include <concepts>
+#include <cstdlib>
 
 template<typename T>
 requires std::integral<T> || std::floating_point<T>
@@ -56,4 +57,16 @@ struct vec3 {
         return {scalar/v.x, scalar/v.y, scalar/v.z};
     }
     // ----- End AI implementations -----
+    
+    constexpr friend auto abs(const T& initial) -> vec3 {
+        return {
+            .x = std::abs(initial.x), 
+            .y = std::abs(initial.y), 
+            .z = std::abs(initial.z)
+        };
+    }
+
+    constexpr auto abs() const {
+        *this = abs(*this);
+    }   
 };
