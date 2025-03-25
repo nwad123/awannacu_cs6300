@@ -5,7 +5,7 @@
 #include "mdspan.hpp"
 #include <filesystem>
 
-// ----------- Type Aliases -----------
+// ----------- Data Structures -----------
 using vec3_fp32 = vec3<float>;
 using vec3_i16 = vec3<int16_t>;
 using vec3_i32 = vec3<int32_t>;
