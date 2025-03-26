@@ -2,6 +2,9 @@
 
 #include "solver/concepts.hpp"
 #include <string_view>
+#include <omp.h> 
+
+#include <core.hpp>
 
 class ParallelCPU
 {
@@ -11,3 +14,4 @@ public:
 };
 
 static_assert(Solver<ParallelCPU>);
+
