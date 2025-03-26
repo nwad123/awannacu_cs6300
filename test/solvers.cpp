@@ -42,8 +42,8 @@ auto print_map(auto map, index2 point) -> void
     for (const auto y : iota(0) | take(map.extent(1))) {
         fmt::print("{:<2}", y);
         for (const auto x : iota(0) | take(map.extent(0))) {
-            if (x == 5 && y == 5)
-                fmt::print(fg(fmt::color::red), "{}", map(x, y) ? "X " : "  ");
+            if (x == point.x && y == point.y)
+                fmt::print(fg(fmt::color::red), "{}", "X ");
             else 
                 fmt::print("{}", map(x, y) ? "X " : "  ");
         }
