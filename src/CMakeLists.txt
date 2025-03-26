@@ -9,4 +9,9 @@ add_library(solvers STATIC ${SOLVERS})
 target_include_directories(solvers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(solvers PRIVATE fmt::fmt)
 target_link_libraries(solvers PRIVATE shared_lib)
+
+if (OpenMP_FOUND)
+    target_link_libraries(solvers PRIVATE OpenMP::OpenMP_CXX)
+endif()
+
 target_project_warnings(solvers)

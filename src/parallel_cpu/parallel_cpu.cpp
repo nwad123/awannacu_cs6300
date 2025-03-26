@@ -2,8 +2,10 @@
 #include "core.hpp"
 #include <fmt/core.h>
 #include <ranges>
-#include <omp.h>
 
+#ifdef _OPENMP 
+#include <omp.h>
+#endif
 
 // Parallel CPU implementation
 // This implementation will use the openMP library to parallelize the computation
@@ -18,7 +20,7 @@
 [[nodiscard]] 
 auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool;
 
-auto Parallel_CPU::solve(const data_type data, const index2 at) -> output_type
+auto ParallelCPU::solve(const data_type data, const index2 at) -> output_type
 {
     using namespace std::views;
 
