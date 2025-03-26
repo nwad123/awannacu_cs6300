@@ -42,6 +42,7 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
 
     auto set_dir = [](const auto l, const auto r) {
         if (l > r) return 1;
+        else if (l == r) return 0;
         else return -1;
     };
 
