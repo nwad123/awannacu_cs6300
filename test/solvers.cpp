@@ -30,12 +30,9 @@ auto print_names([[maybe_unused]] S... solvers)
     (fmt::println(" - {}", S::name), ...);
 }
 
-// ------ Tests -----
-TEST(Serial, FlatPlane) {
-    Serial serial;
-    auto output = serial.solve(flat_plane, {5, 5});
-    auto map = Kokkos::mdspan(output.data(), flat_plane.extents());
 
+auto print_map(auto map, index2 point) -> void 
+{
     fmt::print("  ");
     for (const auto x : iota(0) | take(map.extent(0))) {
         fmt::print("{:<2}", x);
@@ -52,4 +49,21 @@ TEST(Serial, FlatPlane) {
         }
         fmt::println("");
     }
+}
+
+// ------ Tests -----
+TEST(Serial, FlatPlane) {
+    index2 point = {5, 5};
+    Serial serial;
+    auto output = serial.solve(flat_plane, point);
+    auto map = Kokkos::mdspan(output.data(), flat_plane.extents());
+    print_map(map, point);
+}
+
+TEST(Serial, SlopedPlane) {
+    index2 point = {5, 5};
+    Serial serial;
+    auto output = serial.solve(sloped_plane, point);
+    auto map = Kokkos::mdspan(output.data(), sloped_plane.extents());
+    print_map(map, point);
 }
