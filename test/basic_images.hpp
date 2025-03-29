@@ -45,5 +45,22 @@ constexpr auto sloped_plane_fn(const int16_t x, const int16_t y) -> std::array<i
 
     return arr;
 }
-
 }
+
+static inline std::array<int16_t, 25> vertical_hill_storage = 
+    { 0, 1, 2, 1, 0,
+      0, 1, 2, 1, 0,
+      0, 1, 2, 1, 0,
+      0, 1, 2, 1, 0,
+      0, 1, 2, 1, 0};
+
+static inline auto vertical_hill = Kokkos::mdspan(vertical_hill_storage.data(), 5, 5);
+
+static inline std::array<int16_t, 25> cone_storage = 
+    { 0, 0, 0, 0, 0,
+      0, 1, 1, 1, 0,
+      0, 1, 2, 1, 0,
+      0, 1, 1, 1, 0,
+      0, 0, 0, 0, 0};
+
+static inline auto cone = Kokkos::mdspan(cone_storage.data(), 5, 5);
