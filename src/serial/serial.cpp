@@ -28,7 +28,8 @@ auto Serial::solve(const data_type data, const index2 at) -> output_type
     for (const auto x : iota(0) | take(width)) {
         for (const auto y : iota(0) | take(height)) {
             const auto z = data(x, y);
-            output(x, y) = check_visibility(data, from, {x, y, z});
+            const auto visible = check_visibility(data, from, {x, y, z}); 
+            output(x, y) = visible;
         }
     }
 
@@ -52,6 +53,8 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
 
     const auto max = std::max({delta_abs.x, delta_abs.y, delta_abs.z});
 
+    bool valid{true};
+
     if (max == delta_abs.x) {
         auto p_1 = 2 * delta_abs.y - delta_abs.x;
         auto p_2 = 2 * delta_abs.z - delta_abs.x;
@@ -68,12 +71,12 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
             p_1 += 2 * delta_abs.y;
             p_2 += 2 * delta_abs.z;
             
-            if (p1.z < data(p1.x, p1.y)) { return false; }
+            if (p1.z  < data(p1.x, p1.y)) { valid = false; }
         }
     }
     else if (max == delta_abs.y) {
-        auto p_1 = 2 * delta_abs.y - delta_abs.y;
-        auto p_2 = 2 * delta_abs.x - delta_abs.y;
+        auto p_1 = 2 * delta_abs.x - delta_abs.y;
+        auto p_2 = 2 * delta_abs.z - delta_abs.y;
 
         while (p1.y != p2.y) {
             p1.y += ys;
@@ -88,12 +91,12 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
             p_1 += 2 * delta_abs.x;
             p_2 += 2 * delta_abs.z;
             
-            if (p1.z < data(p1.x, p1.y)) { return false; }
+            if (p1.z  < data(p1.x, p1.y)) { valid = false; }
         }
     }
     else {
         auto p_1 = 2 * delta_abs.y - delta_abs.z;
-        auto p_2 = 2 * delta_abs.z - delta_abs.z;
+        auto p_2 = 2 * delta_abs.x - delta_abs.z;
     
         while (p1.z != p2.z) {
             p1.z += zs;
@@ -108,9 +111,9 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
             p_1 += 2 * delta_abs.y;
             p_2 += 2 * delta_abs.x;
             
-            if (p1.z < data(p1.x, p1.y)) { return false; }
+            if (p1.z  < data(p1.x, p1.y)) { valid = false; }
         }
     }
 
-    return true;
+    return valid;
 }
