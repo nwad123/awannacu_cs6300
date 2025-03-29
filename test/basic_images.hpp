@@ -39,7 +39,7 @@ constexpr auto sloped_plane_fn(const int16_t x, const int16_t y) -> std::array<i
 
     for (const auto x_index : iota(zero) | take(W)) {
         for (const auto y_index : iota(zero) | take(H)) {
-            span(x_index, y_index) = x * x_index + y + y_index;
+            span(x_index, y_index) = x * x_index + y * y_index;
         }
     }
 
