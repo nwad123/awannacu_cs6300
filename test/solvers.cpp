@@ -74,7 +74,7 @@ auto print_map(auto data, auto map, index2 point) -> void
             if (x == point.x && y == point.y)
                 fmt::print(fmt::emphasis::bold | fmt::emphasis::italic | fg(fmt::color::black) | bg(color_map(data(x, y))), "{}", " O ");
             else 
-                fmt::print(fg(fmt::color::black) | bg(color_map(data(x, y))), "{}", map(x, y) ? " X " : "   ");
+                fmt::print(fg(fmt::color::black) | bg(color_map(data(x, y))), "{}", map(x, y) ? " + " : "   ");
         }
         fmt::println("");
     }
