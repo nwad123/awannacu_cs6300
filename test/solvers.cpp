@@ -121,10 +121,18 @@ TEST(Serial, Cone1_Center) {
     print_map(cone, map, point);
 }
 
-TEST(Serial, Cone1_Base) {
+TEST(Serial, Cone2_Base) {
     index2 point = {4, 4};
     Serial serial;
     auto output = serial.solve(cone, point);
     auto map = Kokkos::mdspan(output.data(), cone.extents());
     print_map(cone, map, point);
+}
+
+TEST(Serial, DoubleSin1_Center) {
+    index2 point = {4, 4};
+    Serial serial;
+    auto output = serial.solve(double_sin, point);
+    auto map = Kokkos::mdspan(output.data(), double_sin.extents());
+    print_map(double_sin, map, point);
 }
