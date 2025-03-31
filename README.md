@@ -62,3 +62,5 @@ line application.
 
   And in your C++ code make sure to include the ["solvers.hpp"](./src/solvers.hpp) file. This
   includes all the headers from the shared library.
+
+- [`test`](./test/): Builds a test executable that can be run with `ctest` or directly.
