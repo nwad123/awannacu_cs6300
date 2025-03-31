@@ -37,8 +37,7 @@ auto print_map(auto data, auto map, index2 point) -> void
 {
     const auto [min_height, height_range] = [&](){
         const auto heights = std::span(data.data_handle(), data.extent(0) * data.extent(1));
-        const auto max = std::ranges::max(heights);
-        const auto min = std::ranges::min(heights);
+        const auto [min, max] = std::ranges::minmax(heights);
 
         return std::pair{min, max - min};
     }();
