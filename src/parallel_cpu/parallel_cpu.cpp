@@ -38,13 +38,13 @@ auto ParallelCPU::solve(const data_type data, const index2 at) -> output_type
     const auto from = at.to_vec3(data(at.x, at.y));
 
     // check visibility of each point to each other point 
-    #pragma omp parallel for collapse(2) schedule(dynamic)// collapse(2) is used to parallelize the nested for loop, schedule(dynamic) is used to dynamically assign work to threads.
-        for (const auto x : iota(0) | take(width)) {
-            for (const auto y : iota(0) | take(height)) {
-                const auto z = data(x, y);
-                output(x, y) = check_visibility(data, from, {x, y, z});
-            }
+    #pragma omp parallel for schedule(dynamic) collapse(2)
+    for (const auto x : iota(0) | take(width)) {
+        for (const auto y : iota(0) | take(height)) {
+            const auto z = data(x, y);
+            output(x, y) = check_visibility(data, from, {x, y, z});
         }
+    }
 
     return output_vec; 
 }
