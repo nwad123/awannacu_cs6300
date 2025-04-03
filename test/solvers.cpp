@@ -1,5 +1,6 @@
 #include "solvers.hpp"
 #include "core.hpp"
+#include "fmt/base.h"
 #include "serial/serial.hpp"
 #include "solver/concepts.hpp"
 #include "basic_images.hpp"
@@ -52,11 +53,13 @@ auto print_map(auto data, auto map, index2 point) -> void
                 return 1.0;
         }();
 
-        const auto lerp = std::lerp(00.0, 255.0, (z_ - min_) / range_);
+        const auto range = std::lerp(0.0, 1.0, (z_ - min_) / range_);
 
-        const auto r_ = static_cast<uint8_t>(lerp);
-        const auto g_ = static_cast<uint8_t>(255.0 - lerp);
-        const auto b_ = uint8_t{ 0 };
+        auto as_u8 = [](auto n) { return static_cast<uint8_t>(n); };
+
+        const auto r_ = as_u8(std::lerp(0.0, 255.0, range));
+        const auto g_ = as_u8(std::lerp(255.0, 0.0, range));
+        const auto b_ = as_u8(std::lerp(0.0, 0.0, range));
 
         return fmt::rgb(r_, g_, b_);
     };
@@ -128,8 +131,50 @@ TEST(Serial, Cone2_Base) {
     print_map(cone, map, point);
 }
 
+TEST(Serial, Cone3_Side) {
+    index2 point = {3, 3};
+    Serial serial;
+    auto output = serial.solve(cone, point);
+    auto map = Kokkos::mdspan(output.data(), cone.extents());
+    print_map(cone, map, point);
+}
+
+TEST(Serial, SteepCone1_Side) {
+    index2 point = {1, 1};
+    Serial serial;
+    auto output = serial.solve(steep_cone, point);
+    auto map = Kokkos::mdspan(output.data(), steep_cone.extents());
+    print_map(steep_cone, map, point);
+}
+
+TEST(Serial, NegCone1_Center) {
+    index2 point = {2, 2};
+    Serial serial;
+    auto output = serial.solve(neg_cone, point);
+    auto map = Kokkos::mdspan(output.data(), neg_cone.extents());
+    print_map(neg_cone, map, point);
+}
+
+TEST(Serial, NegCone2_Side) {
+    index2 point = {1, 1};
+    Serial serial;
+    auto output = serial.solve(neg_cone, point);
+    auto map = Kokkos::mdspan(output.data(), neg_cone.extents());
+    print_map(neg_cone, map, point);
+}
+
 TEST(Serial, DoubleSin1_Center) {
+    std::ranges::transform(double_sin_storage, double_sin_storage.begin(), [](auto x) { return x + 7; });
     index2 point = {4, 4};
+    Serial serial;
+    auto output = serial.solve(double_sin, point);
+    auto map = Kokkos::mdspan(output.data(), double_sin.extents());
+    print_map(double_sin, map, point);
+}
+
+TEST(Serial, DoubleSin1_Depth) {
+    std::ranges::transform(double_sin_storage, double_sin_storage.begin(), [](auto x) { return x + 7; });
+    index2 point = {2, 2};
     Serial serial;
     auto output = serial.solve(double_sin, point);
     auto map = Kokkos::mdspan(output.data(), double_sin.extents());

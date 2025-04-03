@@ -1,5 +1,6 @@
 #include "serial.hpp"
 #include "core.hpp"
+#include "vec3.hpp"
 #include <fmt/core.h>
 #include <ranges>
 
@@ -10,6 +11,10 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool;
 auto Serial::solve(const data_type data, const index2 at) -> output_type
 {
     using namespace std::views;
+
+    // Add a vantage to the viewpoint, later we can inject this into 
+    // the function.
+    constexpr auto VANTAGE = 2LL;
 
     // get the height and width of the input data 
     const auto width = data.extent(0);
@@ -22,7 +27,8 @@ auto Serial::solve(const data_type data, const index2 at) -> output_type
     auto output = Kokkos::mdspan(output_vec.data(), data.extents());
 
     // get the starting location
-    const auto from = at.to_vec3(data(at.x, at.y));
+    // TODO: raise vantage point by N
+    const auto from = vec3{at.x, at.y, data(at.x, at.y) + VANTAGE};
 
     // check visibility of each point to each other point 
     for (const auto x : iota(0) | take(width)) {

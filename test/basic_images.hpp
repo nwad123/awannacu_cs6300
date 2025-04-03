@@ -64,9 +64,28 @@ static inline std::array<int16_t, 25> cone_storage =
 
 static inline auto cone = Kokkos::mdspan(cone_storage.data(), 5, 5);
 
-static inline std::array<int16_t, 100> double_sin_storage = {0, 4, -3, -1, 4, -2, -2, 4, -1, -3,
-4, 9, 0, 3, 9, 1, 1, 9, 3, 0,
--3, 0, -7, -5, 1, -6, -6, 1, -5, -7,
+static inline std::array<int16_t, 25> steep_cone_storage = 
+    { 0, 0, 0, 0, 0,
+      0, 9, 9, 9, 0,
+      0, 9, 18, 9, 0,
+      0, 9, 9, 9, 0,
+      0, 0, 0, 0, 0};
+
+static inline auto steep_cone = Kokkos::mdspan(cone_storage.data(), 5, 5);
+
+static inline std::array<int16_t, 25> neg_cone_storage = 
+    { 0,  0,  0,  0, 0,
+      0, -1, -1, -1, 0,
+      0, -1, -2, -1, 0,
+      0, -1, -1, -1, 0,
+      0,  0,  0,  0, 0};
+
+static inline auto neg_cone = Kokkos::mdspan(cone_storage.data(), 5, 5);
+
+static inline std::array<int16_t, 100> double_sin_storage = 
+    {0,  4, -3, -1, 4, -2, -2, 4, -1, -3,
+     4,  9,  0, 3, 9, 1, 1, 9, 3, 0,
+     -3, 0, -7, -5, 1, -6, -6, 1, -5, -7,
 -1, 3, -5, -2, 3, -4, -4, 3, -2, -5,
 4, 9, 1, 3, 9, 2, 2, 9, 3, 1,
 -2, 1, -6, -4, 2, -5, -5, 2, -4, -6,
