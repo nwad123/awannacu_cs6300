@@ -6,7 +6,7 @@ if(CUDA_FOUND)
     enable_language(CUDA)
     
     # Set sources up
-    set(SRCS main.cpp parallel_gpu.cpp)
+    set(SRCS main.cu parallel_gpu.cu)
     
     add_executable(par_gpu ${SRCS})
     target_include_directories(par_gpu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
