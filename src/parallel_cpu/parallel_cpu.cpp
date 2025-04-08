@@ -1,7 +1,6 @@
 #include "parallel_cpu.hpp"
 #include "core.hpp"
 #include <fmt/core.h>
-#include <ranges>
 
 #ifdef _OPENMP 
 #include <omp.h>
@@ -22,8 +21,6 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool;
 
 auto ParallelCPU::solve(const data_type data, const index2 at) -> output_type
 {
-    using namespace std::views;
-
     // get the height and width of the input data 
     const auto width = data.extent(0);
     const auto height = data.extent(1);
@@ -39,8 +36,8 @@ auto ParallelCPU::solve(const data_type data, const index2 at) -> output_type
 
     // check visibility of each point to each other point 
     #pragma omp parallel for schedule(dynamic) collapse(2)
-    for (const auto x : iota(0) | take(width)) {
-        for (const auto y : iota(0) | take(height)) {
+    for (int64_t x  = 0; x < static_cast<int64_t>(width); x++) {
+        for (int64_t y  = 0; y < static_cast<int64_t>(width); y++) {
             const auto z = data(x, y);
             output(x, y) = check_visibility(data, from, {x, y, z});
         }
