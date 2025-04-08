@@ -23,7 +23,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(fmt)
 
 # Get OpenMP
-include(FindOpenMP)
+find_package(OpenMP REQUIRED)
 
 # Turn on compile commands for IDE support
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
