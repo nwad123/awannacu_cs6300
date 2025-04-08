@@ -26,14 +26,6 @@ auto sloped_plane_storage = detail::sloped_plane_fn<W, H>(1, 1);
 auto sloped_plane = Kokkos::mdspan(sloped_plane_storage.data(), W, H); 
 
 // ------ Test Functions -----
-template<Solver ...S>
-auto print_names([[maybe_unused]] S... solvers)
-{
-    fmt::println("Added solvers:");
-    (fmt::println(" - {}", S::name), ...);
-}
-
-
 auto print_map(auto data, auto map, index2 point) -> void 
 {
     const auto [min_height, height_range] = [&](){
@@ -164,7 +156,6 @@ TEST(Serial, NegCone2_Side) {
 }
 
 TEST(Serial, DoubleSin1_Center) {
-    std::ranges::transform(double_sin_storage, double_sin_storage.begin(), [](auto x) { return x + 7; });
     index2 point = {4, 4};
     Serial serial;
     auto output = serial.solve(double_sin, point);
@@ -173,7 +164,6 @@ TEST(Serial, DoubleSin1_Center) {
 }
 
 TEST(Serial, DoubleSin1_Depth) {
-    std::ranges::transform(double_sin_storage, double_sin_storage.begin(), [](auto x) { return x + 7; });
     index2 point = {2, 2};
     Serial serial;
     auto output = serial.solve(double_sin, point);
