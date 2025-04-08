@@ -21,6 +21,10 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool;
 
 auto ParallelCPU::solve(const data_type data, const index2 at) -> output_type
 {
+    // Add a vantage to the viewpoint, later we can inject this into 
+    // the function.
+    constexpr auto VANTAGE = 2LL;
+
     // get the height and width of the input data 
     const auto width = data.extent(0);
     const auto height = data.extent(1);
@@ -32,7 +36,7 @@ auto ParallelCPU::solve(const data_type data, const index2 at) -> output_type
     auto output = Kokkos::mdspan(output_vec.data(), data.extents());
 
     // get the starting location
-    const auto from = at.to_vec3(data(at.x, at.y));
+    const auto from = vec3{at.x, at.y, data(at.x, at.y) + VANTAGE};
 
     // check visibility of each point to each other point 
     #pragma omp parallel for schedule(dynamic) collapse(2)
