@@ -6,7 +6,7 @@
 
 /// Returns 'true' when the points are visible to each other
 [[nodiscard]] 
-auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool;
+auto check_visibility(const data_type data, index3 p1, index3 p2, const int64_t vantage = 0) -> bool;
 
 auto Serial::solve(const data_type data, const index2 at) -> output_type
 {
@@ -28,13 +28,13 @@ auto Serial::solve(const data_type data, const index2 at) -> output_type
 
     // get the starting location
     // TODO: raise vantage point by N
-    const auto from = vec3{at.x, at.y, data(at.x, at.y) + VANTAGE};
+    const auto from = vec3{at.x, at.y, int64_t{data(at.x, at.y)}};
 
     // check visibility of each point to each other point 
     for (const auto x : iota(0) | take(width)) {
         for (const auto y : iota(0) | take(height)) {
             const auto z = data(x, y);
-            const auto visible = check_visibility(data, from, {x, y, z}); 
+            const auto visible = check_visibility(data, from, {x, y, z}, VANTAGE); 
             output(x, y) = visible;
         }
     }
@@ -42,7 +42,7 @@ auto Serial::solve(const data_type data, const index2 at) -> output_type
     return output_vec; 
 }
 
-auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
+auto check_visibility(const data_type data, index3 p1, index3 p2, const int64_t vantage) -> bool
 {
     const auto delta = (p2 - p1);
     const auto delta_abs = abs(delta);
@@ -77,7 +77,7 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
             p_1 += 2 * delta_abs.y;
             p_2 += 2 * delta_abs.z;
             
-            if (p1.z  < data(p1.x, p1.y)) { valid = false; }
+            if (p1.z + vantage < data(p1.x, p1.y)) { valid = false; }
         }
     }
     else if (max == delta_abs.y) {
@@ -97,7 +97,7 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
             p_1 += 2 * delta_abs.x;
             p_2 += 2 * delta_abs.z;
             
-            if (p1.z  < data(p1.x, p1.y)) { valid = false; }
+            if (p1.z + vantage < data(p1.x, p1.y)) { valid = false; }
         }
     }
     else {
@@ -117,7 +117,7 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
             p_1 += 2 * delta_abs.y;
             p_2 += 2 * delta_abs.x;
             
-            if (p1.z  < data(p1.x, p1.y)) { valid = false; }
+            if (p1.z + vantage < data(p1.x, p1.y)) { valid = false; }
         }
     }
 
