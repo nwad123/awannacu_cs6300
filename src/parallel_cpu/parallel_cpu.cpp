@@ -57,6 +57,7 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
 
     auto set_dir = [](const auto l, const auto r) {
         if (l > r) return 1;
+        else if (l == r) return 0;
         else return -1;
     };
 
@@ -65,6 +66,8 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
     const auto zs = set_dir(p2.z, p1.z);
 
     const auto max = std::max({delta_abs.x, delta_abs.y, delta_abs.z});
+
+    bool valid{true};
 
     if (max == delta_abs.x) {
         auto p_1 = 2 * delta_abs.y - delta_abs.x;
@@ -82,12 +85,12 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
             p_1 += 2 * delta_abs.y;
             p_2 += 2 * delta_abs.z;
             
-            if (p1.z < data(p1.x, p1.y)) { return false; }
+            if (p1.z  < data(p1.x, p1.y)) { valid = false; }
         }
     }
     else if (max == delta_abs.y) {
-        auto p_1 = 2 * delta_abs.y - delta_abs.y;
-        auto p_2 = 2 * delta_abs.x - delta_abs.y;
+        auto p_1 = 2 * delta_abs.x - delta_abs.y;
+        auto p_2 = 2 * delta_abs.z - delta_abs.y;
 
         while (p1.y != p2.y) {
             p1.y += ys;
@@ -102,12 +105,12 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
             p_1 += 2 * delta_abs.x;
             p_2 += 2 * delta_abs.z;
             
-            if (p1.z < data(p1.x, p1.y)) { return false; }
+            if (p1.z  < data(p1.x, p1.y)) { valid = false; }
         }
     }
     else {
         auto p_1 = 2 * delta_abs.y - delta_abs.z;
-        auto p_2 = 2 * delta_abs.z - delta_abs.z;
+        auto p_2 = 2 * delta_abs.x - delta_abs.z;
     
         while (p1.z != p2.z) {
             p1.z += zs;
@@ -122,10 +125,10 @@ auto check_visibility(const data_type data, index3 p1, index3 p2) -> bool
             p_1 += 2 * delta_abs.y;
             p_2 += 2 * delta_abs.x;
             
-            if (p1.z < data(p1.x, p1.y)) { return false; }
+            if (p1.z  < data(p1.x, p1.y)) { valid = false; }
         }
     }
 
-    return true;
+    return valid;
 }
 
