@@ -5,6 +5,7 @@
 #include "vec2.hpp"
 #include "mdspan.hpp"
 #include <filesystem>
+#include <vector>
 
 // ----------- Data Structures -----------
 using vec3_i16 = vec3<int16_t>;
