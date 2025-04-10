@@ -37,7 +37,7 @@ auto ParallelCPU::solve(const data_type data, const index2 at) -> output_type
     auto output = Kokkos::mdspan(output_vec.data(), data.extents());
 
     // get the starting location
-    const auto from = vec3{at.x, at.y, data(at.x, at.y) + VANTAGE};
+    const auto from = vec3{at.x, at.y, static_cast<decltype(at.y)>(data(at.x, at.y) + VANTAGE)};
 
     // check visibility of each point to each other point 
     #pragma omp parallel for schedule(dynamic) collapse(2)
