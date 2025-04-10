@@ -3,6 +3,7 @@
 #include "vec3.hpp"
 #include <fmt/core.h>
 #include <ranges>
+#include <algorithm>
 
 /// Returns 'true' when the points are visible to each other
 [[nodiscard]] 
