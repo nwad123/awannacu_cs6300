@@ -83,6 +83,22 @@ TEST(Serial, FlatPlane1) {
     print_map(flat_plane, map, point);
 }
 
+TEST(ParallelCPU, FlatPlane1) {
+    index2 point = {5, 5};
+    ParallelCPU parallelCPU;
+    auto output = parallelCPU.solve(flat_plane, point);
+    auto map = Kokkos::mdspan(output.data(), flat_plane.extents());
+    print_map(flat_plane, map, point);
+}
+
+TEST(DistributedCPU, FlatPlane1) {
+    index2 point = {5, 5};
+    DistributedCPU distributedCPU;
+    auto output = distributedCPU.solve(flat_plane, point);
+    auto map = Kokkos::mdspan(output.data(), flat_plane.extents());
+    print_map(flat_plane, map, point);
+}
+
 TEST(Serial, SlopedPlane1) {
     index2 point = {5, 5};
     Serial serial;

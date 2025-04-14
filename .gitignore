@@ -51,3 +51,10 @@ CMakeUserPresets.json
 *.exe
 *.out
 *.app
+*.tlog
+*.pdb
+*.filters
+*.vcxproj
+*.recipe
+*.ilk
+*.cmake
