@@ -147,192 +147,201 @@ std::vector<Point> plot_line(Point start, Point end)
     return plot_line(start.x, start.y, end.x, end.y);
 }
 
-std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>& height_map, 
-    size_t width, size_t height, int radius = 100) {
-std::vector<unsigned int> visibility_map(width * height, 0);
-const int radius_squared = radius * radius;
 
-// Optimization 1: Precompute angles in each direction for faster line-of-sight checks
-const int num_angles = 360;  // Number of discrete angles
-const double angle_step = 2 * M_PI / num_angles;
-
-std::vector<std::pair<int, int>> ray_directions;
-ray_directions.reserve(num_angles);
-
-for (int i = 0; i < num_angles; ++i) {
-double angle = i * angle_step;
-int dx = static_cast<int>(std::round(std::cos(angle) * radius));
-int dy = static_cast<int>(std::round(std::sin(angle) * radius));
-ray_directions.push_back({dx, dy});
+std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>& height_map, size_t width, size_t height, int radius = 100) {
+    std::vector<unsigned int> visibility_map(width * height, 0);
+    const int radius_squared = radius * radius;
+    
+    // Precompute the circle offsets once
+    std::vector<std::pair<int, int>> circle_offsets;
+    for (int dy = -radius; dy <= radius; ++dy) {
+        for (int dx = -radius; dx <= radius; ++dx) {
+            // Check if point is within circle
+            if (dx*dx + dy*dy <= radius_squared) {
+                circle_offsets.push_back({dx, dy});
+            }
+        }
+    }
+    
+    // Process each pixel
+    for (size_t y = 0; y < height; ++y) {
+        for (size_t x = 0; x < width; ++x) {
+            // Print progress more frequently
+            if ((y * width + x) % 1000 == 0) {
+                std::cout << "\rProgress: " << (static_cast<float>(y * width + x) / (width * height)) * 100 << "%";
+                std::cout.flush();
+            }
+            
+            unsigned short current_height = height_map[y * width + x];
+            // Skip walls
+            if (current_height == 0) {
+                visibility_map[y * width + x] = 0;
+                continue;
+            }
+            
+            // Start with 1 (the pixel itself is always visible)
+            unsigned int visible_count = 1;
+            
+            // Check each point in the circle
+            for (const auto& [dx, dy] : circle_offsets) {
+                // Skip the center pixel (already counted)
+                if (dx == 0 && dy == 0) continue;
+                
+                int target_x = static_cast<int>(x) + dx;
+                int target_y = static_cast<int>(y) + dy;
+                
+                // Skip if out of bounds
+                if (target_x < 0 || target_x >= static_cast<int>(width) || 
+                    target_y < 0 || target_y >= static_cast<int>(height))
+                    continue;
+                
+                // Skip walls
+                unsigned short target_height = height_map[target_y * width + target_x];
+                if (target_height == 0) continue;
+                
+                // Check line of sight using Bresenham's algorithm
+                bool is_visible = true;
+                
+                // Calculate points along the line
+                int x0 = x, y0 = y;
+                int x1 = target_x, y1 = target_y;
+                
+                // Bresenham's line algorithm
+                bool steep = std::abs(y1 - y0) > std::abs(x1 - x0);
+                if (steep) {
+                    std::swap(x0, y0);
+                    std::swap(x1, y1);
+                }
+                
+                if (x0 > x1) {
+                    std::swap(x0, x1);
+                    std::swap(y0, y1);
+                }
+                
+                int dx_line = x1 - x0;
+                int dy_line = std::abs(y1 - y0);
+                int error = dx_line / 2;
+                int ystep = (y0 < y1) ? 1 : -1;
+                int y_line = y0;
+                
+                // Calculate slope for height check
+                float dist_total = std::sqrt(static_cast<float>(dx_line * dx_line + dy_line * dy_line));
+                float height_diff_total = target_height - current_height;
+                float slope_threshold = height_diff_total / dist_total;
+                
+                // Check intermediate points along the line
+                for (int x_line = x0 + 1; x_line < x1; ++x_line) {
+                    int check_x = steep ? y_line : x_line;
+                    int check_y = steep ? x_line : y_line;
+                    
+                    // Skip point check if it's one of the endpoints
+                    if ((check_x == static_cast<int>(x) && check_y == static_cast<int>(y)) ||
+                        (check_x == target_x && check_y == target_y))
+                        continue;
+                    
+                    unsigned short check_height = height_map[check_y * width + check_x];
+                    
+                    // If we hit a wall, line of sight is blocked
+                    if (check_height == 0) {
+                        is_visible = false;
+                        break;
+                    }
+                    
+                    // Calculate the distance from source to this point
+                    float dist_to_point = std::sqrt(static_cast<float>(
+                        (check_x - static_cast<int>(x)) * (check_x - static_cast<int>(x)) + 
+                        (check_y - static_cast<int>(y)) * (check_y - static_cast<int>(y))
+                    ));
+                    
+                    // Calculate the minimum height needed to see over this point
+                    float height_required = current_height + (slope_threshold * dist_to_point);
+                    
+                    // If this point's height exceeds what's required to see the target,
+                    // then the target is blocked
+                    if (check_height > height_required) {
+                        is_visible = false;
+                        break;
+                    }
+                    
+                    // Update y position for Bresenham's algorithm
+                    error -= dy_line;
+                    if (error < 0) {
+                        y_line += ystep;
+                        error += dx_line;
+                    }
+                }
+                
+                // If the target is visible, increment the counter
+                if (is_visible) {
+                    visible_count++;
+                }
+            }
+            
+            // Store the visibility count
+            visibility_map[y * width + x] = visible_count;
+        }
+    }
+    
+    std::cout << "\rProgress: 100%" << std::endl;
+    return visibility_map;
 }
 
-// Process each pixel
-for (size_t y = 0; y < height; ++y) {
-for (size_t x = 0; x < width; ++x) {
-// Print progress more frequently
-if ((y * width + x) % 1000 == 0) {
-std::cout << "\rProgress: " << (static_cast<float>(y * width + x) / (width * height)) * 100 << "%";
-std::cout.flush();
-}
-
-unsigned short current_height = height_map[y * width + x];
-// Skip walls
-if (current_height == 0) continue;
-
-// Start with 1 (the pixel itself is always visible)
-unsigned int visible_count = 1;
-
-// Cast rays in different directions
-for (const auto& [dx, dy] : ray_directions) {
-// Use a more efficient ray casting approach
-// Start from the center and move outward
-int max_steps = radius;
-int curr_x = x;
-int curr_y = y;
-float max_angle_seen = -std::numeric_limits<float>::infinity();
-
-// Step size for more efficient ray traversal
-// For long rays, we don't need to check every pixel
-const float ray_length = std::sqrt(dx*dx + dy*dy);
-const float step_x = dx / ray_length;
-const float step_y = dy / ray_length;
-
-float curr_x_f = x + 0.5f;  // Start at center of pixel
-float curr_y_f = y + 0.5f;
-
-bool hit_wall = false;
-
-for (int step = 1; step <= max_steps; ++step) {
-// Move along the ray
-curr_x_f += step_x;
-curr_y_f += step_y;
-
-// Round to nearest pixel
-curr_x = std::round(curr_x_f);
-curr_y = std::round(curr_y_f);
-
-// Check bounds
-if (curr_x < 0 || curr_x >= static_cast<int>(width) || 
-curr_y < 0 || curr_y >= static_cast<int>(height))
-break;
-
-// Check if we've gone too far (outside the radius)
-int dist_squared = (curr_x - x)*(curr_x - x) + (curr_y - y)*(curr_y - y);
-if (dist_squared > radius_squared)
-break;
-
-// Get height at current position
-unsigned short point_height = height_map[curr_y * width + curr_x];
-
-// Skip if it's a wall (height 0)
-if (point_height == 0) {
-hit_wall = true;
-break;
-}
-
-// Calculate angle to determine visibility
-float distance = std::sqrt(dist_squared);
-float height_diff = point_height - current_height;
-float angle = height_diff / distance;
-
-// If the angle is greater than the maximum seen so far,
-// the pixel is visible
-if (angle > max_angle_seen) {
-max_angle_seen = angle;
-visible_count++;
-}
-}
-}
-
-// Store the visibility count
-visibility_map[y * width + x] = visible_count;
-}
-}
-
-std::cout << "\rProgress: 100%" << std::endl;
-return visibility_map;
-}
-
-// Example of how to use plot_line, I show that the algorithm will work from any starting point to any stopping point, regardless of direction
-int main(int argc, char** argv)
-{
-	//usage: ./<exec> <read_file> <write_file> <mpi_rank> <mpi_size>
-
-    // Check if the correct number of arguments is provided
-    if (argc != 5){
-        std::cerr << "Usage: " << argv[0] << " <read_file> <write_file> <mpi_rank> <mpi_size>" << std::endl;
+int main(int argc, char** argv) {
+    // Usage: ./<exec> <read_file> <write_file> <width> <height>
+    if (argc != 5) {
+        std::cerr << "Usage: " << argv[0] << " <read_file> <write_file> <width> <height>" << std::endl;
         return 1;
     }
-    // Read the input file from the command line arguments into memory
+    
+    // Parse width and height from command line
+    int width = std::stoi(argv[3]);
+    int height = std::stoi(argv[4]);
+    size_t expected_size = width * height * sizeof(unsigned short);
+    
+    // Open input file
     std::ifstream input_file(argv[1], std::ios::binary);
-    if (!input_file){
+    if (!input_file) {
         std::cerr << "Error opening input file: " << argv[1] << std::endl;
         return 1;
     }
-    // Read the file into a vector of unsigned shorts (16-bit values)
-    std::vector<unsigned short> height_map((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
-    input_file.close();
-    // Check if the file was read successfully
-    if (height_map.empty()){
-        std::cerr << "Error reading height map from file: " << argv[1] << std::endl;
-        return 1;
-    }
-    // Get the size of the height map
-    size_t height_map_size = height_map.size() / sizeof(unsigned short);
-    // Calculate the width and height of the height map assume square
-    size_t width = static_cast<size_t>(sqrt(height_map_size));
-    size_t height = height_map_size / width;
-    // Check if the height map is square
-    if (width * height != height_map_size){
-        std::cerr << "Error: Height map is not square." << std::endl;
-        return 1;
-    }
-
-    // Get the rank and size of the MPI processes
-    int rank = std::stoi(argv[3]);
-    int size = std::stoi(argv[4]);
-    // Check if the rank and size are valid
-    // if (rank < 0 || rank >= size){
-    //     std::cerr << "Error: Invalid MPI rank or size." << std::endl;
-    //     return 1;
-    // }
-    // Check if the rank is 0, if so, print the height map size
-    // if (rank == 0){
-        std::cout << "Height map size: " << height_map_size << std::endl;
-        std::cout << "Width: " << width << std::endl;
-        std::cout << "Height: " << height << std::endl;
-    // }
-
-    // Create a vector to store the output image
-    std::vector<unsigned int> output_image(height_map_size, 0); // Initialize to 0
     
-
-    // Calculate the visibility map using the height map and the radius
-    int radius = 100; // Set the radius for visibility calculation
+    // Get file size
+    input_file.seekg(0, std::ios::end);
+    std::streamsize file_size = input_file.tellg();
+    input_file.seekg(0, std::ios::beg);
+    
+    // Verify file size matches expected dimensions
+    if (file_size != expected_size) {
+        std::cerr << "Error: File size (" << file_size << " bytes) doesn't match expected dimensions: " 
+                  << width << "x" << height << " (" << expected_size << " bytes)" << std::endl;
+        return 1;
+    }
+    
+    // Allocate memory for height map
+    std::vector<unsigned short> height_map(width * height);
+    
+    // Read the file directly into the vector
+    input_file.read(reinterpret_cast<char*>(height_map.data()), file_size);
+    input_file.close();
+    
+    std::cout << "Height map loaded: " << width << "x" << height << std::endl;
+    
+    // Calculate visibility map
+    int radius = 100;
     std::vector<unsigned int> visibility_map = calculateVisibility(height_map, width, height, radius);
     
-    // Write the output image to a file
+    // Write output
     std::ofstream output_file(argv[2], std::ios::binary);
-    if (!output_file){
+    if (!output_file) {
         std::cerr << "Error opening output file: " << argv[2] << std::endl;
         return 1;
     }
-    // Write the output image to the file, give it a 32bit raw header p5
-    // output_file << "P5\n" << width << " " << height << "\n255\n"; // P5 header for binary PGM
-    output_file.write(reinterpret_cast<const char*>(visibility_map.data()), visibility_map.size() * sizeof(unsigned int));
+    
+    output_file.write(reinterpret_cast<const char*>(visibility_map.data()), 
+                      visibility_map.size() * sizeof(unsigned int));
     output_file.close();
-    // Check if the output file was written successfully
-    if (!output_file){
-        std::cerr << "Error writing output file: " << argv[2] << std::endl;
-        return 1;
-    }
-    // Print the output image size
-
-    if (rank == 0){
-        std::cout << "Output image size: " << output_image.size() << std::endl;
-        std::cout << "Output image written to: " << argv[2] << std::endl;
-    }
-
-	
-	return 0;
+    
+    std::cout << "Output written to: " << argv[2] << std::endl;
+    
+    return 0;
 }
