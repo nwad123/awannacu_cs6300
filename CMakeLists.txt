@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.26)
 project(AwannaCU)
 
 # Enable C++17
@@ -21,9 +21,6 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/fmtlib/fmt
   GIT_TAG        11.1.4)
 FetchContent_MakeAvailable(fmt)
-
-# Get OpenMP
-find_package(OpenMP REQUIRED)
 
 # Turn on compile commands for IDE support
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
