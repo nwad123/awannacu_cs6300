@@ -22,7 +22,6 @@ auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>
 
     // open the file for binary reading
     std::ifstream input(input_file, std::ios::binary);
-
     if (!input.is_open()) {
         fmt::println("Failed to open input file: {}", input_file.string());
         return input_data;
@@ -48,7 +47,7 @@ auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>
     // If the file size is not a multiple of uint16_t's then we have a problem 
     // we also have a problem if the file is empty
     if (file_size % sizeof(int16_t) != 0 || file_size == 0) {
-        fmt::println("Input file {} opened, but has an invalid size!", input_file.string());
+        fmt::println("Input file {} opened, but has an invalid size of {} bytes!", input_file.string(), file_size);
         return input_data;
     }
 
