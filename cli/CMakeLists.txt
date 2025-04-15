@@ -1,5 +1,0 @@
-add_executable(main main.cpp)
-target_link_libraries(main PUBLIC solvers)
-target_link_libraries(main PUBLIC fmt::fmt)
-target_link_libraries(main PUBLIC shared_lib)
-target_project_warnings(main)
