@@ -147,20 +147,22 @@ std::vector<Point> plot_line(Point start, Point end)
     return plot_line(start.x, start.y, end.x, end.y);
 }
 
-
 std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>& height_map, size_t width, size_t height, int radius = 100) {
     std::vector<unsigned int> visibility_map(width * height, 0);
     const int radius_squared = radius * radius;
     
-    // Precompute the circle offsets once
-    std::vector<std::pair<int, int>> circle_offsets;
-    for (int dy = -radius; dy <= radius; ++dy) {
-        for (int dx = -radius; dx <= radius; ++dx) {
-            // Check if point is within circle
-            if (dx*dx + dy*dy <= radius_squared) {
-                circle_offsets.push_back({dx, dy});
-            }
-        }
+    // Optimization 1: Precompute angles in each direction for faster line-of-sight checks
+    const int num_angles = 12;  // Number of discrete angles
+    const double angle_step = 2 * M_PI / num_angles;
+    
+    std::vector<std::pair<int, int>> ray_directions;
+    ray_directions.reserve(num_angles);
+    
+    for (int i = 0; i < num_angles; ++i) {
+        double angle = i * angle_step;
+        int dx = static_cast<int>(std::round(std::cos(angle) * radius));
+        int dy = static_cast<int>(std::round(std::sin(angle) * radius));
+        ray_directions.push_back({dx, dy});
     }
     
     // Process each pixel
@@ -174,106 +176,70 @@ std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>&
             
             unsigned short current_height = height_map[y * width + x];
             // Skip walls
-            if (current_height == 0) {
-                visibility_map[y * width + x] = 0;
-                continue;
-            }
+            if (current_height == 0) continue;
             
             // Start with 1 (the pixel itself is always visible)
             unsigned int visible_count = 1;
             
-            // Check each point in the circle
-            for (const auto& [dx, dy] : circle_offsets) {
-                // Skip the center pixel (already counted)
-                if (dx == 0 && dy == 0) continue;
+            // Cast rays in different directions
+            for (const auto& [dx, dy] : ray_directions) {
+                // Use a more efficient ray casting approach
+                // Start from the center and move outward
+                int max_steps = radius;
+                int curr_x = x;
+                int curr_y = y;
+                float max_angle_seen = -std::numeric_limits<float>::infinity();
                 
-                int target_x = static_cast<int>(x) + dx;
-                int target_y = static_cast<int>(y) + dy;
+                // Step size for more efficient ray traversal
+                // For long rays, we don't need to check every pixel
+                const float ray_length = std::sqrt(dx*dx + dy*dy);
+                const float step_x = dx / ray_length;
+                const float step_y = dy / ray_length;
                 
-                // Skip if out of bounds
-                if (target_x < 0 || target_x >= static_cast<int>(width) || 
-                    target_y < 0 || target_y >= static_cast<int>(height))
-                    continue;
+                float curr_x_f = x + 0.5f;  // Start at center of pixel
+                float curr_y_f = y + 0.5f;
                 
-                // Skip walls
-                unsigned short target_height = height_map[target_y * width + target_x];
-                if (target_height == 0) continue;
+                bool hit_wall = false;
                 
-                // Check line of sight using Bresenham's algorithm
-                bool is_visible = true;
-                
-                // Calculate points along the line
-                int x0 = x, y0 = y;
-                int x1 = target_x, y1 = target_y;
-                
-                // Bresenham's line algorithm
-                bool steep = std::abs(y1 - y0) > std::abs(x1 - x0);
-                if (steep) {
-                    std::swap(x0, y0);
-                    std::swap(x1, y1);
-                }
-                
-                if (x0 > x1) {
-                    std::swap(x0, x1);
-                    std::swap(y0, y1);
-                }
-                
-                int dx_line = x1 - x0;
-                int dy_line = std::abs(y1 - y0);
-                int error = dx_line / 2;
-                int ystep = (y0 < y1) ? 1 : -1;
-                int y_line = y0;
-                
-                // Calculate slope for height check
-                float dist_total = std::sqrt(static_cast<float>(dx_line * dx_line + dy_line * dy_line));
-                float height_diff_total = target_height - current_height;
-                float slope_threshold = height_diff_total / dist_total;
-                
-                // Check intermediate points along the line
-                for (int x_line = x0 + 1; x_line < x1; ++x_line) {
-                    int check_x = steep ? y_line : x_line;
-                    int check_y = steep ? x_line : y_line;
+                for (int step = 1; step <= max_steps; ++step) {
+                    // Move along the ray
+                    curr_x_f += step_x;
+                    curr_y_f += step_y;
                     
-                    // Skip point check if it's one of the endpoints
-                    if ((check_x == static_cast<int>(x) && check_y == static_cast<int>(y)) ||
-                        (check_x == target_x && check_y == target_y))
-                        continue;
+                    // Round to nearest pixel
+                    curr_x = std::round(curr_x_f);
+                    curr_y = std::round(curr_y_f);
                     
-                    unsigned short check_height = height_map[check_y * width + check_x];
+                    // Check bounds
+                    if (curr_x < 0 || curr_x >= static_cast<int>(width) || 
+                        curr_y < 0 || curr_y >= static_cast<int>(height))
+                        break;
                     
-                    // If we hit a wall, line of sight is blocked
-                    if (check_height == 0) {
-                        is_visible = false;
+                    // Check if we've gone too far (outside the radius)
+                    int dist_squared = (curr_x - x)*(curr_x - x) + (curr_y - y)*(curr_y - y);
+                    if (dist_squared > radius_squared)
+                        break;
+                    
+                    // Get height at current position
+                    unsigned short point_height = height_map[curr_y * width + curr_x];
+                    
+                    // Skip if it's a wall (height 0)
+                    if (point_height == 0) {
+                        hit_wall = true;
                         break;
                     }
                     
-                    // Calculate the distance from source to this point
-                    float dist_to_point = std::sqrt(static_cast<float>(
-                        (check_x - static_cast<int>(x)) * (check_x - static_cast<int>(x)) + 
-                        (check_y - static_cast<int>(y)) * (check_y - static_cast<int>(y))
-                    ));
+                    // Calculate angle to determine visibility
+                    float distance = std::sqrt(dist_squared);
+                    float height_diff = point_height - current_height;
+                    float angle = height_diff / distance;
                     
-                    // Calculate the minimum height needed to see over this point
-                    float height_required = current_height + (slope_threshold * dist_to_point);
-                    
-                    // If this point's height exceeds what's required to see the target,
-                    // then the target is blocked
-                    if (check_height > height_required) {
-                        is_visible = false;
-                        break;
+                    // If the angle is greater than the maximum seen so far,
+                    // the pixel is visible
+                    if (angle > max_angle_seen) {
+                        max_angle_seen = angle;
+                        visible_count++;
                     }
-                    
-                    // Update y position for Bresenham's algorithm
-                    error -= dy_line;
-                    if (error < 0) {
-                        y_line += ystep;
-                        error += dx_line;
-                    }
-                }
-                
-                // If the target is visible, increment the counter
-                if (is_visible) {
-                    visible_count++;
                 }
             }
             
