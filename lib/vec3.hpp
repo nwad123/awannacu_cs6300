@@ -1,10 +1,8 @@
 #pragma once
 
-#include <concepts>
 #include <cmath>
 
 template<typename T>
-requires std::integral<T> || std::floating_point<T>
 struct vec3 {
     using value_type = T;
 
@@ -64,9 +62,9 @@ struct vec3 {
     
     constexpr friend vec3 abs(const vec3<T>& initial) {
         return {
-            .x = std::abs(initial.x), 
-            .y = std::abs(initial.y), 
-            .z = std::abs(initial.z)
+            std::abs(initial.x), 
+            std::abs(initial.y), 
+            std::abs(initial.z)
         };
     }
 };

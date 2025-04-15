@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.21)
 project(AwannaCU)
 
-# Enable C++20
-set(CMAKE_CXX_STANDARD 20)
+# Enable C++17
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ## Dependencies
@@ -44,9 +44,3 @@ add_subdirectory(lib)
 
 # Subdirectory for solver implementations
 add_subdirectory(src)
-
-# Subdirectory for command line application
-add_subdirectory(cli)
-
-# Subdirectory for tests 
-add_subdirectory(test)

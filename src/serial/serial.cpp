@@ -5,14 +5,13 @@
 #include <ranges>
 #include <algorithm>
 
+/*
 /// Returns 'true' when the points are visible to each other
 [[nodiscard]] 
 auto check_visibility(const data_type data, index3 p1, index3 p2, const int64_t vantage = 0) -> bool;
 
-auto Serial::solve(const data_type data, const index2 at) -> output_type
+auto solve(const data_type data, const index2 at) -> output_type
 {
-    using namespace std::views;
-
     // Add a vantage to the viewpoint, later we can inject this into 
     // the function.
     constexpr auto VANTAGE = 2LL;
@@ -123,4 +122,4 @@ auto check_visibility(const data_type data, index3 p1, index3 p2, const int64_t 
     }
 
     return valid;
-}
+}*/

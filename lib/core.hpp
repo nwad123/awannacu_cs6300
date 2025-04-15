@@ -6,6 +6,7 @@
 #include "mdspan.hpp"
 #include <filesystem>
 #include <vector>
+#include <span.hpp>
 
 // ----------- Data Structures -----------
 using vec3_i16 = vec3<int16_t>;
@@ -47,6 +48,6 @@ auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>;
 ///          is still the **owner** of the data, this just returns a span 
 ///          over it.
 [[nodiscard]]
-auto format_input(std::span<int16_t> input_data, 
+auto format_input(tcb::span<int16_t> input_data, 
                   const size_t width, 
                   const size_t length) -> mat_2d_i16;
