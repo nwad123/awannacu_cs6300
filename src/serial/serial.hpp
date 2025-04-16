@@ -124,7 +124,7 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
     // Bresenhams algorithm in 2d (starting at `from` and going to `to`)
     // This is the second call to the algorithm, where the seen squares are actually added up.
     int16_t seen_count = 0;
-    double max_angle = std::numeric_limits<double>::min();
+    double max_angle = std::numeric_limits<double>::lowest();
     const auto from_height = heights(from.x, from.y) + vantage;
     auto length = double{0};
 
@@ -149,16 +149,15 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
             const auto height = heights(x, y);
             const auto z_ = height - from_height;
 
-            return static_cast<double>(z_);
-        }();
+            length += step;
 
-        length += step;
+            return static_cast<double>(z_) / length;
+        }();
 
         // if angle_approx is >= max_angle that means we can see this point so we 
         // will increment the seen count and mark this square as seen
-        if (angle_approx >= max_angle * length) {
+        if (angle_approx >= max_angle) {
             max_angle = angle_approx;
-
             const auto x_ = translate_to_seen_coordinates_x(x);
             const auto y_ = translate_to_seen_coordinates_y(y);
             auto& seen_ = seen(x_, y_);
