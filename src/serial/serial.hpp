@@ -16,7 +16,8 @@ namespace detail {
     auto is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_i16 heights, mat_2d_u8 seen) -> int16_t;
 
     constexpr size_t Radius = 100;
-    static auto seen_storage = std::array<uint8_t, Radius * Radius>{0};
+    constexpr size_t SeenDim = 2 * (Radius);
+    static auto seen_storage = std::array<uint8_t, SeenDim * SeenDim>{0};
 }
 
 template<size_t Radius>
@@ -74,6 +75,19 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
     auto x = from.x;
     auto y = from.y;
 
+    // we only use a seen vector that is big enough to cover the circle we look at 
+    // so we need a way to translate the (x,y) coordinates into coordinates of the 
+    // seen vector
+    const auto top_left_x = from.x - static_cast<int64_t>(detail::Radius);
+    auto translate_to_seen_coordinates_x = [&](const auto x) -> int64_t {
+        return x - top_left_x;
+    };
+
+    const auto top_left_y = from.y - static_cast<int64_t>(detail::Radius);
+    auto translate_to_seen_coordinates_y = [&](const auto y) -> int64_t {
+        return y - top_left_y;
+    };
+
     // this is an approximation of the distance that each line takes. This is 
     // precalculated in order to facilitate simpler operations in the hot loop
     const auto step = [&]() {
@@ -90,7 +104,7 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
             break;
         }
 
-        if (!seen(x, y)) {
+        if (!seen(translate_to_seen_coordinates_x(x), translate_to_seen_coordinates_y(y))) {
             break;
         }
         
@@ -143,9 +157,13 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
         if (angle_approx >= max_angle) {
             max_angle = angle_approx;
 
-            if (!seen(x,y)) {
+            const auto x_ = translate_to_seen_coordinates_x(x);
+            const auto y_ = translate_to_seen_coordinates_y(y);
+            auto& seen_ = seen(x_, y_);
+
+            if (!seen_) {
                 seen_count++;
-                seen(x, y) = true;
+                seen_ = true;
             }
         }
     }
