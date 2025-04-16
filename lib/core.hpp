@@ -17,6 +17,7 @@ using vec2_i16 = vec2<int16_t>;
 using index2 = vec2<int64_t>;
 
 using mat_2d_exts = Kokkos::dextents<size_t, 2>;
+using mat_2d_u8 = Kokkos::mdspan<uint8_t, mat_2d_exts>;
 using mat_2d_i16 = Kokkos::mdspan<int16_t, mat_2d_exts>;
 using mat_2d_f32 = Kokkos::mdspan<float, mat_2d_exts>;
 

@@ -3,6 +3,7 @@
 #include "serial.hpp"
 #include <algorithm>
 #include <cstdlib>
+#include <chrono>
 
 [[nodiscard]]
 static inline auto bad_usage(const tcb::span<char*> args) -> int;
@@ -21,7 +22,13 @@ auto main(int argc, char** argv) -> int
         }
     }();
 
+    const auto start = std::chrono::high_resolution_clock::now();
+    
     solve(args[1], args[2], width, height);
+
+    const auto end = std::chrono::high_resolution_clock::now();
+    const auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    fmt::println("Elapsed time: {} ms", elapsed_ms);
 
     return EXIT_SUCCESS;
 }
