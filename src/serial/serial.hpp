@@ -26,23 +26,24 @@ auto detail::is_visible_from(vec2<T> from, vec2<T> to, mat_2d_f32 heights) -> in
     // OPTIMIZATION: use another algorithm to optimize the step size
     const auto dir_norm = normalize(dir);
 
-    auto start = src;
-    while ((start - src).magnitude() < dir.magnitude())
+    auto point = src;
+
+    while ((point - src).magnitude() < dir.magnitude())
     {
         // progress the ray forward
-        start = start + dir_norm;
+        point += dir_norm;
 
         // get the x and y coordinates
-        const auto x = static_cast<int64_t>(std::round(start.x));
-        const auto y = static_cast<int64_t>(std::round(start.y));
+        const auto x = static_cast<int64_t>(std::round(point.x));
+        const auto y = static_cast<int64_t>(std::round(point.y));
 
         // check if the point is higher than the current height
-        if (heights(x, y) > start.z) {
+        if (heights(x, y) > point.z) {
             // return no success
             return 0;
         }
     }
-
+    
     // return success
     return 1;
 }
