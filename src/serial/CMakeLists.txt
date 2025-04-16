@@ -14,4 +14,4 @@ if (OpenMP_FOUND)
     target_link_libraries(serial PRIVATE OpenMP::OpenMP_CXX)
 endif()
 
-target_project_warnings(serial )
+target_project_warnings(serial)

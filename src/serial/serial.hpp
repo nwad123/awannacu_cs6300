@@ -17,7 +17,6 @@ namespace detail {
 
     constexpr size_t Radius = 100;
     constexpr size_t SeenDim = 2 * (Radius);
-    static auto seen_storage = std::array<uint8_t, SeenDim * SeenDim>{0};
 }
 
 template<size_t Radius>
