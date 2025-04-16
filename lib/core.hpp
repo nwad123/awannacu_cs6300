@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <vector>
 #include <span.hpp>
+#include <fmt/core.h>
 
 // ----------- Data Structures -----------
 using vec3_i16 = vec3<int16_t>;
@@ -17,11 +18,8 @@ using index2 = vec2<int64_t>;
 
 using mat_2d_exts = Kokkos::dextents<size_t, 2>;
 using mat_2d_i16 = Kokkos::mdspan<int16_t, mat_2d_exts>;
+using mat_2d_f32 = Kokkos::mdspan<float, mat_2d_exts>;
 
-using data_type = mat_2d_i16;
-// TODO: check if we can actually use std::vector<bool> or not
-// Also, we probably just want to use `mdspan`?
-using output_type = std::vector<Bool>;
 
 
 // ----------- Functions -----------
@@ -47,7 +45,17 @@ auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>;
 /// @returns A simple two dimensional span over the data. Note that `input_data`
 ///          is still the **owner** of the data, this just returns a span 
 ///          over it.
+template<typename T>
 [[nodiscard]]
-auto format_input(tcb::span<int16_t> input_data, 
+auto to_span(tcb::span<T> input_data, 
                   const size_t width, 
-                  const size_t length) -> mat_2d_i16;
+                  const size_t length) -> Kokkos::mdspan<T, mat_2d_exts>
+{
+    if (width * length != input_data.size()) {
+        fmt::println("Input size mismatch!");
+        return {};
+    }
+
+    return Kokkos::mdspan(input_data.data(), width, length);
+}
+                

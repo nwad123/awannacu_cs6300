@@ -14,7 +14,7 @@ TEST(ReadInputTest, ValidFile) {
 
     {
         std::ofstream outFile(testFile, std::ios::binary);
-        outFile.write(reinterpret_cast<const char*>(expectedData.data()), expectedData.size() * sizeof(uint16_t));
+        outFile.write(reinterpret_cast<const char*>(expectedData.data()), static_cast<std::streamsize>(expectedData.size() * sizeof(uint16_t)));
     }
 
     std::vector<int16_t> actualData = read_input(testFile);

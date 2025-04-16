@@ -1,6 +1,6 @@
 #include "core.hpp"
 #include "fmt/base.h"
-#include "span.hpp"
+#include "serial.hpp"
 #include <algorithm>
 #include <cstdlib>
 
@@ -13,9 +13,9 @@ auto main(int argc, char** argv) -> int
 
     if (args.size() < 3) { return bad_usage(args); }
 
-    auto h_ = read_input(args[1]);
+    solve(args[1], args[2]);
 
-    fmt::println("Max: {}, Min: {}", *std::max_element(h_.cbegin(), h_.cend()), *std::min_element(h_.cbegin(), h_.cend()));
+    return EXIT_SUCCESS;
 }
 
 auto bad_usage(const tcb::span<char*> args) -> int 

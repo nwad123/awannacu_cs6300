@@ -1,5 +1,4 @@
 #include "core.hpp"
-#include <fmt/core.h>
 #include <fstream>
 #include <iostream>
 
@@ -62,16 +61,4 @@ auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>
 
     // return our data
     return input_data;
-}
-
-auto format_input(tcb::span<int16_t> input_data, 
-                  const size_t width, 
-                  const size_t length) -> mat_2d_i16
-{
-    if (width * length != input_data.size()) {
-        fmt::println("Input size mismatch!");
-        return {};
-    }
-
-    return Kokkos::mdspan(input_data.data(), width, length);
 }
