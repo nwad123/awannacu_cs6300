@@ -10,15 +10,30 @@
 #include <fstream>
 #include <string>
 
-// #include <mpi.h> // Include MPI header for MPI functions
+#include <stdio.h>
 #include <algorithm> // For std::max
 #include <iterator> // For std::istreambuf_iterator
 #include <cstdlib> // For std::abs
 #include <cstring> // For std::memcpy
 
+#include "parallel_cpu.hpp"
+// #include "core.hpp"
+// #include <fmt/core.h>
+
+// #ifdef _MPI 
+    #include <mpi.h>
+    int my_rank, comm_sz;
+    MPI_Comm comm;
+// #endif
 
 
-std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>& height_map, size_t width, size_t height, int radius = 100, int angle = 12) {
+
+std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>& height_map, int width, int height, int radius = 100, int angle = 12) {
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    
+    
     std::vector<unsigned int> visibility_map(width * height, 0);
     const int radius_squared = radius * radius;
     
@@ -26,6 +41,7 @@ std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>&
     const double angle_step = 2 * M_PI / num_angles;
     
     std::vector<std::pair<int, int>> ray_directions;
+    
     ray_directions.reserve(num_angles);
     
     for (int i = 0; i < num_angles; ++i) {
@@ -36,8 +52,10 @@ std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>&
     }
     
     // Process each pixel
-    for (size_t y = 0; y < height; ++y) {
-        for (size_t x = 0; x < width; ++x) {
+    //use parallel cpu with opeMP
+#pragma omp parallel for collapse(2) schedule(dynamic, 1)
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
             // Print progress more frequently
             if ((y * width + x) % 1000 == 0) {
                 std::cout << "\rProgress: " << (static_cast<float>(y * width + x) / (width * height)) * 100 << "%";
@@ -122,50 +140,66 @@ std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>&
     return visibility_map;
 }
 
+// Function to get command line arguments
+Get_arg(int argc, char* argv[], char** input_file_name, char** output_file_name, int* width, int* height, int* angle);
+
 int main(int argc, char** argv) {
-    // Usage: ./<exec> <read_file> <write_file> <width> <height>
-    if (argc != 6) {
-        std::cerr << "Usage: " << argv[0] << " <read_file> <write_file> <width> <height> <angle>" << std::endl;
-        return 1;
-    }
+
+
+    MPI_Init(&argc, &argv);
     
-    // Parse width and height from command line
-    int width = std::stoi(argv[3]);
-    int height = std::stoi(argv[4]);
-	int angle = std::stoi(argv[5]);
-    size_t expected_size = width * height * sizeof(unsigned short);
+    //MPI specific initialization
+    int initialized, rank, size;
+    MPI_Initialized(&initialized);
+    comm = MPI_COMM_WORLD;
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+    //parse arg input
+
+    int width, height, angle;
+    Get_arg(argc, argv, &input_file_name, &output_file_name, &width, &height, &angle);
+   
+
+    int expected_size = width * height * sizeof(unsigned short);
     
-    // Open input file
-    std::ifstream input_file(argv[1], std::ios::binary);
-    if (!input_file) {
-        std::cerr << "Error opening input file: " << argv[1] << std::endl;
-        return 1;
-    }
-    
-    // Get file size
-    input_file.seekg(0, std::ios::end);
-    std::streamsize file_size = input_file.tellg();
-    input_file.seekg(0, std::ios::beg);
-    
-    // Verify file size matches expected dimensions
-    if (file_size != expected_size) {
-        std::cerr << "Error: File size (" << file_size << " bytes) doesn't match expected dimensions: " 
-                  << width << "x" << height << " (" << expected_size << " bytes)" << std::endl;
-        return 1;
-    }
-    
-    // Allocate memory for height map
     std::vector<unsigned short> height_map(width * height);
-    
-    // Read the file directly into the vector
-    input_file.read(reinterpret_cast<char*>(height_map.data()), file_size);
-    input_file.close();
-    
-    std::cout << "Height map loaded: " << width << "x" << height << std::endl;
-    
+
+
+    if(my_rank == 0) {
+        // Open input file
+        std::ifstream input_file(argv[1], std::ios::binary);
+        if (!input_file) {
+            std::cerr << "Error opening input file: " << argv[1] << std::endl;
+            return 1;
+        }
+           
+        // Get file size
+        input_file.seekg(0, std::ios::end);
+        std::streamsize file_size = input_file.tellg();
+        input_file.seekg(0, std::ios::beg);
+        
+        // Verify file size matches expected dimensions
+        if (file_size != expected_size) {
+            std::cerr << "Error: File size (" << file_size << " bytes) doesn't match expected dimensions: " 
+                    << width << "x" << height << " (" << expected_size << " bytes)" << std::endl;
+            mpi_Finalize();
+            return 1;
+        }
+        
+        // Allocate memory for height map
+        
+        // Read the file directly into the vector
+        input_file.read(reinterpret_cast<char*>(height_map.data()), file_size);
+        input_file.close();
+        
+        std::cout << "Height map loaded: " << width << "x" << height << std::endl;
+    }
     // Calculate visibility map
     int radius = 100;
+
+
     std::vector<unsigned int> visibility_map = calculateVisibility(height_map, width, height, radius, angle);
+    MPI_Finalize();
     
     // Write output
     std::ofstream output_file(argv[2], std::ios::binary);
@@ -179,6 +213,33 @@ int main(int argc, char** argv) {
     output_file.close();
     
     std::cout << "Output written to: " << argv[2] << std::endl;
-    
+
+
     return 0;
+}
+
+
+
+void Get_arg(int argc, char* argv[], int* width, int* height, int* angle) {
+    if (my_rank == 0) {
+        if (argc == 6) {
+            *width             = std::stof(argv[3]);
+            *height            = std::stoi(argv[4]);
+            *angle             = std::stoi(argv[5]);
+        } else {
+        std::cerr << "Usage: " << argv[0] << " <read_file> <write_file> <width> <height> <angle> <threads>" << std::endl;
+            *angle = -1;
+        }
+    }
+    // Broadcast all parameters EXCEPT string names
+
+    MPI_Bcast(width, 1, MPI_INT, 0, comm);
+    MPI_Bcast(height, 1, MPI_INT, 0, comm);
+    MPI_Bcast(angle, 1, MPI_INT, 0, comm);
+
+    if (*angle <= 0) {
+        //kill program if usage isn't correct.
+        MPI_Finalize();
+        exit(0);
+    }
 }
