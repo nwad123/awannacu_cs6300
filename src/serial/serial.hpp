@@ -59,6 +59,16 @@ auto detail::circle_points() -> std::vector<std::pair<int64_t, int64_t>>
         x++;
     }
 
+    // first sort the points according to the y-value
+    std::sort(points.begin(), points.end(), [](const auto& a, const auto& b) {
+        return a.second < b.second;
+    });
+
+    // then arrange them according to the x-value
+    std::stable_sort(points.begin(), points.end(), [](const auto& a, const auto& b) {
+        return a.first < b.first;
+    });
+
     return points;
 }
 
