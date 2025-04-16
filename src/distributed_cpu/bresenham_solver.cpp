@@ -17,142 +17,12 @@
 #include <cstring> // For std::memcpy
 
 
-// Bresenham's Line Algorithm: https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
-struct Point
-{
-    int x;
-    int y;
-};
 
-
-// Traces a line between points (x1, y1) and (x2, y2) and prints the intermediate coordinates
-std::vector<Point> plot_line(int x1, int y1, int x2, int y2)
-{
-    // Create a vector to store the points
-    std::vector<Point> points;
-    points.reserve(std::max(abs(x2 - x1), abs(y2 - y1)) + 1); // Reserve space for the maximum number of points
-	// Compute the differences between start and end points
-	int dx = x2 - x1;
-	int dy = y2 - y1;
-
-	// Absolute values of the change in x and y
-	const int abs_dx = abs(dx);
-	const int abs_dy = abs(dy);
-
-	// Initial point
-	int x = x1;
-	int y = y1;
-
-	// Proceed based on the absolute differences to support all octants
-	if (abs_dx > abs_dy)
-	{
-		// If the line is moving to the left, set dx accordingly
-		int dx_update;
-		if (dx > 0)
-		{
-			dx_update = 1;
-		}
-		else
-		{
-			dx_update = -1;
-		}
-
-		// Calculate the initial decision parameter
-		int p = 2 * abs_dy - abs_dx;
-
-		// Draw the line for the x-major case
-		for (int i = 0; i <= abs_dx; i++)
-		{
-			// Print the current coordinate
-			// std::cout << "(" << x << "," << y << ")" << std::endl;
-            //add point to vector
-            points.push_back({x, y});
-
-			// Threshold for deciding whether or not to update y
-			if (p < 0)
-			{
-				p = p + 2 * abs_dy;
-			}
-			else
-			{
-				// Update y
-				if (dy >= 0)
-				{
-					y += 1;
-				}
-				else
-				{
-					y += -1;
-				}
-
-				p = p + 2 * abs_dy - 2 * abs_dx;
-			}
-
-			// Always update x
-			x += dx_update;
-		}
-	}
-	else
-	{
-		// If the line is moving downwards, set dy accordingly
-		int dy_update;
-		if (dy > 0)
-		{
-			dy_update = 1;
-		}
-		else
-		{
-			dy_update = -1;
-		}
-
-		// Calculate the initial decision parameter
-		int p = 2 * abs_dx - abs_dy;
-
-		// Draw the line for the y-major case
-		for (int i = 0; i <= abs_dy; i++)
-		{
-			// Print the current coordinate
-			// std::cout << "(" << x << "," << y << ")" << std::endl;
-            points.push_back({x, y});
-			// Threshold for deciding whether or not to update x
-			if (p < 0)
-			{
-				p = p + 2 * abs_dx;
-			}
-			else
-			{
-				// Update x
-				if (dx >= 0)
-				{
-					x += 1;
-				}
-				else
-				{
-					x += -1;
-				}
-
-				p = p + 2 * abs_dx - 2 * abs_dy;
-			}
-
-			// Always update y
-			y += dy_update;
-		}
-	}
-
-    //return value
-    return points;
-}
-std::vector<Point> plot_line(Point start, Point end)
-{
-    return plot_line(start.x, start.y, end.x, end.y);
-}
-
-std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>& height_map, size_t width, size_t height, int radius = 100) {
+std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>& height_map, size_t width, size_t height, int radius = 100, int angle = 12) {
     std::vector<unsigned int> visibility_map(width * height, 0);
     const int radius_squared = radius * radius;
     
-    // Optimization 1: Precompute angles in each direction for faster line-of-sight checks
-    const int num_angles = 12;  // Number of discrete angles
+    const int num_angles = angle;  // Number of discrete angles
     const double angle_step = 2 * M_PI / num_angles;
     
     std::vector<std::pair<int, int>> ray_directions;
@@ -254,14 +124,15 @@ std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>&
 
 int main(int argc, char** argv) {
     // Usage: ./<exec> <read_file> <write_file> <width> <height>
-    if (argc != 5) {
-        std::cerr << "Usage: " << argv[0] << " <read_file> <write_file> <width> <height>" << std::endl;
+    if (argc != 6) {
+        std::cerr << "Usage: " << argv[0] << " <read_file> <write_file> <width> <height> <angle>" << std::endl;
         return 1;
     }
     
     // Parse width and height from command line
     int width = std::stoi(argv[3]);
     int height = std::stoi(argv[4]);
+	int angle = std::stoi(argv[5]);
     size_t expected_size = width * height * sizeof(unsigned short);
     
     // Open input file
@@ -294,7 +165,7 @@ int main(int argc, char** argv) {
     
     // Calculate visibility map
     int radius = 100;
-    std::vector<unsigned int> visibility_map = calculateVisibility(height_map, width, height, radius);
+    std::vector<unsigned int> visibility_map = calculateVisibility(height_map, width, height, radius, angle);
     
     // Write output
     std::ofstream output_file(argv[2], std::ios::binary);
