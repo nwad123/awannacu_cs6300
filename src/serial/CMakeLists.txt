@@ -7,7 +7,7 @@ target_link_libraries(serial PRIVATE shared_lib)
 
 set(INTERPROCEDURAL_OPTIMIZATION TRUE)
 target_compile_options(serial 
-  PRIVATE -O3 -DNDEBUG -march=native
+  PRIVATE -O3 -DNDEBUG -march=native -g
 )
 
 if (OpenMP_FOUND)
