@@ -25,22 +25,18 @@ def display_raw_image(filename, width, height, window_name, dtype=np.int16):
         # Reshape the 1D array into a 2D array representing the image
         image_array = image_array.reshape((height, width))
 
-        # --- Important Image Processing for Display ---
-        # 1. Clip or Normalize: Handle the int16 data appropriately.
-        #    - If your height data has a known range (e.g., 0-10000), clip it.
-        #    - Otherwise, normalize it to the range 0-255 for display.        
-        min_val = np.min(image_array)
+        # Normalize the image array to the range 0-255 for display
         max_val = np.max(image_array)
-        normalized_image = ((image_array - min_val) / (max_val - min_val) * 255).astype(np.uint8)
-        # 2. Color Mapping (Optional): Apply a colormap for better visualization.
-        #    - This makes height variations more apparent.  Try different colormaps.
-        #    -  cv2.COLORMAP_JET, cv2.COLORMAP_TERRAIN, cv2.COLORMAP_HOT are good choices.
-        # color_mapped_image = cv2.applyColorMap(normalized_image, cv2.COLORMAP_BONE)
+        min_val = np.min(image_array)
+        if max_val > 0:
+            image_array = (image_array / max_val * 255).astype(np.uint8)
+        else:
+            image_array = np.zeros_like(image_array, dtype=np.uint8)
 
-        print(f"Range: [{min_val}:{max_val}]")
+        print(f"Filename: {filename}, Min: {min_val}, Max: {max_val}")
 
         # Display the image in a window
-        cv2.imshow(window_name, normalized_image)
+        cv2.imshow(window_name, image_array)        
     except FileNotFoundError:
         print(f"Error: File not found at {filename}")
     except Exception as e:
@@ -59,7 +55,7 @@ if __name__ == "__main__":
     filenames = args.filenames
 
     for i, filename in enumerate(filenames):
-        window_name = f"Raw Image {i+1}"
+        window_name = f"Raw Image {i+1}: {filename}"
         display_raw_image(filename, width, height, window_name)
     
     cv2.waitKey(0)  # Wait for a key press to close the window

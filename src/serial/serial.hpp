@@ -13,7 +13,7 @@ namespace detail {
     auto circle_points() -> std::vector<std::pair<int64_t, int64_t>>;
     
     template<typename T>
-    auto is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_i16 heights, mat_2d_u8 seen) -> int16_t;
+    auto is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_i16 heights, mat_2d_u8 seen, const int16_t vantage = 0) -> int16_t;
 
     constexpr size_t Radius = 100;
     constexpr size_t SeenDim = 2 * (Radius);
@@ -63,8 +63,18 @@ auto detail::circle_points() -> std::vector<std::pair<int64_t, int64_t>>
 }
 
 template<typename T>
-auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_i16 heights, mat_2d_u8 seen) -> int16_t
+auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_i16 heights, mat_2d_u8 seen, const int16_t vantage) -> int16_t
 {
+    static const auto reciprocal_LUT = [&](){
+        std::array<double, Radius + Radius/2> lut;
+        size_t count = 0;
+        for (auto& l : lut) {
+            l = 1.0 / count;
+            count++;
+        }
+        return lut;
+    }();
+
     const auto dx = std::abs(to.x - from.x);
     const auto dy = std::abs(to.y - from.y);
     const auto sx = from.x < to.x ? 1 : -1;
@@ -92,7 +102,8 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
     // precalculated in order to facilitate simpler operations in the hot loop
     const auto step = [&]() {
         const auto taxi_cab_length = dx + dy;
-        return static_cast<double>(detail::Radius) / static_cast<double>(taxi_cab_length);
+        const auto step_as_double = static_cast<double>(detail::Radius) / static_cast<double>(taxi_cab_length);
+        return 1.0 / step_as_double;
     }();
 
     // Bresenhams algorithm in 2d (starting at `from` and going to `to`)
@@ -124,8 +135,9 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
     // This is the second call to the algorithm, where the seen squares are actually added up.
     int16_t seen_count = 0;
     double max_angle = std::numeric_limits<double>::min();
-    const auto from_height = heights(from.x, from.y);
+    const auto from_height = heights(from.x, from.y) + vantage;
     auto length = double{0};
+    auto reciprocal = reciprocal_LUT.cbegin();
 
     while(1)
     {
@@ -147,9 +159,9 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
         const auto angle_approx = [&](){
             const auto height = heights(x, y);
             const auto z_ = height - from_height;
-            length += step;
-
-            return z_ / length;
+            const auto angle = z_ * (*reciprocal * step);
+            reciprocal++;
+            return angle;
         }();
 
         // if angle_approx is >= max_angle that means we can see this point so we 

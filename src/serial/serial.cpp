@@ -88,7 +88,7 @@ auto detail::solve(mat_2d_i16 heights, mat_2d_i16 outputs) -> void {
                 const auto y_ = y + y_offset;
 
                 if (is_valid_point(x_, y_)) {
-                    outputs(x, y) += detail::is_visible_from(vec2{x, y}, vec2{x_, y_}, heights, seen);
+                    outputs(x, y) += detail::is_visible_from(vec2{x, y}, vec2{x_, y_}, heights, seen, 6);
                 }
             }
         }

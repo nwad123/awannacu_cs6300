@@ -22,15 +22,13 @@ auto main(int argc, char** argv) -> int
         }
     }();
 
-    for (size_t i = 0; i < 10; i++) {
-        const auto start = std::chrono::high_resolution_clock::now();
-        
-        solve(args[1], args[2], width, height);
+    const auto start = std::chrono::high_resolution_clock::now();
+    
+    solve(args[1], args[2], width, height);
 
-        const auto end = std::chrono::high_resolution_clock::now();
-        const auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-        fmt::println("Elapsed time: {} ms", elapsed_ms);
-    }
+    const auto end = std::chrono::high_resolution_clock::now();
+    const auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    fmt::println("Elapsed time: {} ms", elapsed_ms);
 
     return EXIT_SUCCESS;
 }
