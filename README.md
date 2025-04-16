@@ -54,13 +54,10 @@ line application.
   And in your C++ code make sure to include the ["core.hpp"](./lib/core.hpp) file. This
   includes all the headers from the shared library.
 
-- [`src`](./src/): A shared static library containing all of the solver implementations.
+- [`src`](./src/): The directory containing the sources for all the exectubles.
 
-  ```cmake
-  target_link_libraries(<target> PRIVATE solvers)
-  ```
+## Scaling Study
 
-  And in your C++ code make sure to include the ["solvers.hpp"](./src/solvers.hpp) file. This
-  includes all the headers from the shared library.
+For 1 vs. 2 we will have time vs. number of threads.
 
-- [`test`](./test/): Builds a test executable that can be run with `ctest` or directly.
+For 4 vs. 5 we will look at the number of nodes vs time.

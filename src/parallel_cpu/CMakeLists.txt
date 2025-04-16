@@ -14,5 +14,10 @@ if (OpenMP_FOUND)
     target_link_libraries(par_cpu PRIVATE OpenMP::OpenMP_CXX)
 endif()
 
+set(INTERPROCEDURAL_OPTIMIZATION TRUE)
+target_compile_options(par_cpu 
+  PRIVATE -O1 -DDEBUG -g3
+)
+
 # add compiler warnings
 target_project_warnings(par_cpu)
