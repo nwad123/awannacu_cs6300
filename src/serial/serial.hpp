@@ -96,18 +96,13 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
         
         const auto e2 = 2 * err;
 
-        // first if statement broken down into branchless computation
-        {
-            const auto e_y = e2 > -dy;
-            err -= dy * e_y;
-            x += sx * e_y;
+        if (e2 > -dy) {
+            err -= dy;
+            x += sx;
         }
-
-        // second if statement broken down into branchless computation
-        {
-            const auto e_x = e2 < dx;
-            err += dx * e_x;
-            y += sy * e_x;
+        if (e2 < dx) {
+            err += dx;
+            y += sy;
         }
     }
 
@@ -126,18 +121,13 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
         
         const auto e2 = 2 * err;
 
-        // first if statement broken down into branchless computation
-        {
-            const auto e_y = e2 > -dy;
-            err -= dy * e_y;
-            x += sx * e_y;
+        if (e2 > -dy) {
+            err -= dy;
+            x += sx;
         }
-
-        // second if statement broken down into branchless computation
-        {
-            const auto e_x = e2 < dx;
-            err += dx * e_x;
-            y += sy * e_x;
+        if (e2 < dx) {
+            err += dx;
+            y += sy;
         }
 
         const auto angle_approx = [&](){
