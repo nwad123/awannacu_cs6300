@@ -3,6 +3,8 @@
 #include "core.hpp"
 #include <filesystem>
 #include <numeric>
+#include <algorithm>
+#include <vector>
 
 auto solve(const std::filesystem::path input_file, const std::filesystem::path output_file, const size_t width = 6000, const size_t height = 6000) -> void;
 
