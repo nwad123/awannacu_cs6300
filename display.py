@@ -2,6 +2,7 @@
 
 import numpy as np
 import cv2
+import argparse
 
 def display_raw_image(filename, width, height, dtype=np.int16):
     """
@@ -27,24 +28,16 @@ def display_raw_image(filename, width, height, dtype=np.int16):
         # --- Important Image Processing for Display ---
         # 1. Clip or Normalize: Handle the int16 data appropriately.
         #    - If your height data has a known range (e.g., 0-10000), clip it.
-        #    - Otherwise, normalize it to the range 0-255 for display.
+        #    - Otherwise, normalize it to the range 0-255 for display.        
         min_val = np.min(image_array)
         max_val = np.max(image_array)
-
-        if min_val < 0 :
-            # Option A: Clip to 0-max.  Good if negative values are meaningless.
-            image_array = np.clip(image_array, 0, max_val)
-            normalized_image = (image_array / max_val * 255).astype(np.uint8)
-        elif max_val > 255:
-             # Option B: Normalize to 0-255.  Good for general heightmaps.
-            normalized_image = ((image_array - min_val) / (max_val - min_val) * 255).astype(np.uint8)
-        else:
-            # Option C: If data is already in 0-255 range.
-            normalized_image = image_array.astype(np.uint8)
+        normalized_image = ((image_array - min_val) / (max_val - min_val) * 255).astype(np.uint8)
         # 2. Color Mapping (Optional): Apply a colormap for better visualization.
         #    - This makes height variations more apparent.  Try different colormaps.
         #    -  cv2.COLORMAP_JET, cv2.COLORMAP_TERRAIN, cv2.COLORMAP_HOT are good choices.
         color_mapped_image = cv2.applyColorMap(normalized_image, cv2.COLORMAP_JET)
+
+        print(f"Range: [{min_val}:{max_val}]")
 
         # Display the image in a window
         cv2.imshow("Raw Image", color_mapped_image)
@@ -56,9 +49,14 @@ def display_raw_image(filename, width, height, dtype=np.int16):
         print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
-    filename = 'input.raw'
-    width = 6000
-    height = 6000
+    parser = argparse.ArgumentParser(description="Display a raw image file.")
+    parser.add_argument("filename", help="Path to the raw image file")
+    parser.add_argument("width", type=int, help="Width of the image")
+    parser.add_argument("height", type=int, help="Height of the image")
+    args = parser.parse_args()
 
-    # Example usage:
+    filename = args.filename
+    width = args.width
+    height = args.height
+
     display_raw_image(filename, width, height)

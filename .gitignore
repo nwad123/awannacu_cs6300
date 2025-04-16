@@ -58,3 +58,4 @@ CMakeUserPresets.json
 *.recipe
 *.ilk
 *.cmake
+output.raw

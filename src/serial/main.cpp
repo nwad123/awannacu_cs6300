@@ -13,13 +13,21 @@ auto main(int argc, char** argv) -> int
 
     if (args.size() < 3) { return bad_usage(args); }
 
-    solve(args[1], args[2]);
+    const auto [width, height] = [&]() -> std::pair<size_t, size_t>{
+        if (args.size() == 5) {
+            return {std::atoi(args[3]), std::atoi(args[4])};
+        } else {
+            return {6000, 6000};
+        }
+    }();
+
+    solve(args[1], args[2], width, height);
 
     return EXIT_SUCCESS;
 }
 
 auto bad_usage(const tcb::span<char*> args) -> int 
 {
-    fmt::println("Usage: {} <input-file> <output-file>", args[0]);
+    fmt::println("Usage: {} <input-file> <output-file> [<width> <height>]", args[0]);
     return EXIT_FAILURE;
 }

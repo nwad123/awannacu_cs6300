@@ -27,6 +27,7 @@ auto detail::is_visible_from(vec2<T> from, vec2<T> to, mat_2d_f32 heights) -> in
     const auto dir_norm = normalize(dir);
 
     auto point = src;
+    point.z += 2.0;
 
     while ((point - src).magnitude() < dir.magnitude())
     {
@@ -38,7 +39,7 @@ auto detail::is_visible_from(vec2<T> from, vec2<T> to, mat_2d_f32 heights) -> in
         const auto y = static_cast<int64_t>(std::round(point.y));
 
         // check if the point is higher than the current height
-        if (heights(x, y) > point.z) {
+        if (static_cast<float>(heights(x, y)) > point.z) {
             // return no success
             return 0;
         }

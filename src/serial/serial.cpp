@@ -100,13 +100,14 @@ auto detail::solve(mat_2d_f32 heights, mat_2d_i16 outputs) -> void {
     // Check visibility for each point
     for (int64_t y = 0; y < heights.extent(1); y++) {
         for (int64_t x = 0; x < heights.extent(0); x++) {
+            outputs(x, y) = 0;
             for (const auto& [x_offset, y_offset] : pixel_offsets) {
                 // check if the offset point is inside the circle
                 const auto x_ = x + x_offset;
                 const auto y_ = y + y_offset;
 
                 if (is_valid_point(x_, y_)) {
-                    heights(x, y) += detail::is_visible_from(vec2{x, y}, vec2{x_, y_}, heights);
+                    outputs(x, y) += detail::is_visible_from(vec2{x, y}, vec2{x_, y_}, heights);
                 }
             }
         }
