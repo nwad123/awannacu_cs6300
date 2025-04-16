@@ -2,49 +2,163 @@
 
 #include "core.hpp"
 #include <filesystem>
+#include <numeric>
 
 auto solve(const std::filesystem::path input_file, const std::filesystem::path output_file, const size_t width = 6000, const size_t height = 6000) -> void;
 
 namespace detail {
-    auto solve(mat_2d_f32 heights, mat_2d_i16 outputs) -> void;
+    auto solve(mat_2d_i16 heights, mat_2d_i16 outputs) -> void;
+    
+    template<size_t Radius>
+    auto circle_points() -> std::vector<std::pair<int64_t, int64_t>>;
+    
     template<typename T>
-    auto is_visible_from(vec2<T> from, vec2<T> to, mat_2d_f32 heights) -> int16_t;
+    auto is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_i16 heights, mat_2d_u8 seen) -> int16_t;
+
+    constexpr size_t Radius = 100;
+    static auto seen_storage = std::array<uint8_t, Radius * Radius>{0};
+}
+
+template<size_t Radius>
+auto detail::circle_points() -> std::vector<std::pair<int64_t, int64_t>>
+{
+    static_assert(Radius > 0, "Radius must be positive.");
+
+    // Calculate the estimated circumference.  Use a double for intermediate calculation.
+    const double circumference = 2.0 * 3.14159 * Radius;
+
+    // Estimate the number of points.  This is an approximation.
+    const size_t estimated_num_points = static_cast<size_t>(std::ceil(circumference));
+
+    // Reserve space in the vector.
+    std::vector<std::pair<int64_t, int64_t>> points;
+    points.reserve(estimated_num_points);
+
+    // Set the intial values up to calculate cirle points
+    int64_t x = 0;
+    int64_t y = Radius;
+    int64_t d = 3 - 2 * Radius;
+
+    // Calculate values of the first octant (and then swap the values around for the rest)
+    while (x <= y) {
+        points.push_back({x, y});     // Octant 1
+        points.push_back({y, x});     // Octant 2
+        points.push_back({-x, y});    // Octant 4
+        points.push_back({-y, x});    // Octant 3
+        points.push_back({x, -y});    // Octant 8
+        points.push_back({y, -x});    // Octant 7
+        points.push_back({-x, -y});   // Octant 5
+        points.push_back({-y, -x});   // Octant 6
+        if (d < 0) {
+            d = d + 4 * x + 6;
+        } else {
+            d = d + 4 * (x - y) + 10;
+            y--;
+        }
+        x++;
+    }
+
+    return points;
 }
 
 template<typename T>
-auto detail::is_visible_from(vec2<T> from, vec2<T> to, mat_2d_f32 heights) -> int16_t
+auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_i16 heights, mat_2d_u8 seen) -> int16_t
 {
-    // get the starting and ending points in vec3 form
-    const auto src = vec3{static_cast<float>(from.x), static_cast<float>(from.y), heights(from.x, from.y)};
-    const auto dst = vec3{static_cast<float>(to.x), static_cast<float>(to.y), heights(to.x, to.y)};
+    const auto dx = std::abs(to.x - from.x);
+    const auto dy = std::abs(to.y - from.y);
+    const auto sx = from.x < to.x ? 1 : -1;
+    const auto sy = from.y < to.y ? 1 : -1;
 
-    // get the pointing vector from source to destination
-    const auto dir = dst - src;
+    auto err = dx - dy;
 
-    // set the step size to 1, this means we'll get repeat comparisons but that is 
-    // totally okay.
-    // OPTIMIZATION: use another algorithm to optimize the step size
-    const auto dir_norm = normalize(dir);
+    auto x = from.x;
+    auto y = from.y;
 
-    auto point = src;
-    point.z += 2.0;
+    // this is an approximation of the distance that each line takes. This is 
+    // precalculated in order to facilitate simpler operations in the hot loop
+    const auto step = [&]() {
+        const auto taxi_cab_length = dx + dy;
+        return static_cast<double>(detail::Radius) / static_cast<double>(taxi_cab_length);
+    }();
 
-    while ((point - src).magnitude() < dir.magnitude())
+    // Bresenhams algorithm in 2d (starting at `from` and going to `to`)
+    // This is the first call to the algorithm, and it only continues while the points along the current
+    // path have been seen 
+    while(1)
     {
-        // progress the ray forward
-        point += dir_norm;
+        if (x == to.x && y == to.y) {
+            break;
+        }
 
-        // get the x and y coordinates
-        const auto x = static_cast<int64_t>(std::round(point.x));
-        const auto y = static_cast<int64_t>(std::round(point.y));
+        if (!seen(x, y)) {
+            break;
+        }
+        
+        const auto e2 = 2 * err;
 
-        // check if the point is higher than the current height
-        if (static_cast<float>(heights(x, y)) > point.z) {
-            // return no success
-            return 0;
+        // first if statement broken down into branchless computation
+        {
+            const auto e_y = e2 > -dy;
+            err -= dy * e_y;
+            x += sx * e_y;
+        }
+
+        // second if statement broken down into branchless computation
+        {
+            const auto e_x = e2 < dx;
+            err += dx * e_x;
+            y += sy * e_x;
         }
     }
-    
-    // return success
-    return 1;
+
+    // Bresenhams algorithm in 2d (starting at `from` and going to `to`)
+    // This is the second call to the algorithm, where the seen squares are actually added up.
+    int16_t seen_count = 0;
+    double max_angle = std::numeric_limits<double>::min();
+    const auto from_height = heights(from.x, from.y);
+    auto length = double{0};
+
+    while(1)
+    {
+        if (x == to.x && y == to.y) {
+            break;
+        }
+        
+        const auto e2 = 2 * err;
+
+        // first if statement broken down into branchless computation
+        {
+            const auto e_y = e2 > -dy;
+            err -= dy * e_y;
+            x += sx * e_y;
+        }
+
+        // second if statement broken down into branchless computation
+        {
+            const auto e_x = e2 < dx;
+            err += dx * e_x;
+            y += sy * e_x;
+        }
+
+        const auto angle_approx = [&](){
+            const auto height = heights(x, y);
+            const auto z_ = height - from_height;
+            length += step;
+
+            return z_ / length;
+        }();
+
+        // if angle_approx is >= max_angle that means we can see this point so we 
+        // will increment the seen count and mark this square as seen
+        if (angle_approx >= max_angle) {
+            max_angle = angle_approx;
+
+            if (!seen(x,y)) {
+                seen_count++;
+                seen(x, y) = true;
+            }
+        }
+    }
+
+    return seen_count;
 }
