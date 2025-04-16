@@ -3,6 +3,8 @@
 #include "core.hpp"
 #include <filesystem>
 #include <numeric>
+#include <algorithm>
+#include <vector>
 
 auto solve(const std::filesystem::path input_file, const std::filesystem::path output_file, const size_t width = 6000, const size_t height = 6000) -> void;
 
@@ -13,11 +15,10 @@ namespace detail {
     auto circle_points() -> std::vector<std::pair<int64_t, int64_t>>;
     
     template<typename T>
-    auto is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_i16 heights, mat_2d_u8 seen) -> int16_t;
+    auto is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_i16 heights, mat_2d_u8 seen, const int16_t vantage = 0) -> int16_t;
 
     constexpr size_t Radius = 100;
     constexpr size_t SeenDim = 2 * (Radius);
-    static auto seen_storage = std::array<uint8_t, SeenDim * SeenDim>{0};
 }
 
 template<size_t Radius>
@@ -59,11 +60,21 @@ auto detail::circle_points() -> std::vector<std::pair<int64_t, int64_t>>
         x++;
     }
 
+    // first sort the points according to the y-value
+    std::sort(points.begin(), points.end(), [](const auto& a, const auto& b) {
+        return a.second < b.second;
+    });
+
+    // then arrange them according to the x-value
+    std::stable_sort(points.begin(), points.end(), [](const auto& a, const auto& b) {
+        return a.first < b.first;
+    });
+
     return points;
 }
 
 template<typename T>
-auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_i16 heights, mat_2d_u8 seen) -> int16_t
+auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_i16 heights, mat_2d_u8 seen, const int16_t vantage) -> int16_t
 {
     const auto dx = std::abs(to.x - from.x);
     const auto dy = std::abs(to.y - from.y);
@@ -92,7 +103,8 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
     // precalculated in order to facilitate simpler operations in the hot loop
     const auto step = [&]() {
         const auto taxi_cab_length = dx + dy;
-        return static_cast<double>(detail::Radius) / static_cast<double>(taxi_cab_length);
+        const auto step_as_double = static_cast<double>(detail::Radius) / static_cast<double>(taxi_cab_length);
+        return step_as_double;
     }();
 
     // Bresenhams algorithm in 2d (starting at `from` and going to `to`)
@@ -123,8 +135,8 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
     // Bresenhams algorithm in 2d (starting at `from` and going to `to`)
     // This is the second call to the algorithm, where the seen squares are actually added up.
     int16_t seen_count = 0;
-    double max_angle = std::numeric_limits<double>::min();
-    const auto from_height = heights(from.x, from.y);
+    double max_angle = std::numeric_limits<double>::lowest();
+    const auto from_height = heights(from.x, from.y) + vantage;
     auto length = double{0};
 
     while(1)
@@ -147,16 +159,16 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
         const auto angle_approx = [&](){
             const auto height = heights(x, y);
             const auto z_ = height - from_height;
+
             length += step;
 
-            return z_ / length;
+            return static_cast<double>(z_) / length;
         }();
 
         // if angle_approx is >= max_angle that means we can see this point so we 
         // will increment the seen count and mark this square as seen
         if (angle_approx >= max_angle) {
             max_angle = angle_approx;
-
             const auto x_ = translate_to_seen_coordinates_x(x);
             const auto y_ = translate_to_seen_coordinates_y(y);
             auto& seen_ = seen(x_, y_);

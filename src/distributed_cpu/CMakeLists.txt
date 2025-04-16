@@ -2,7 +2,7 @@
 include(FindMPI)
 
 # Set the exectuable sources
-set(SRCS mpi_cpu_awcu.cpp)
+set(SRCS bresenham_solver.cpp)
 
 add_executable(dist_cpu ${SRCS})
 target_include_directories(dist_cpu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

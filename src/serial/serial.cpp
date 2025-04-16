@@ -67,7 +67,9 @@ auto detail::solve(mat_2d_i16 heights, mat_2d_i16 outputs) -> void {
 
     // precompute the circular offsets
     const auto pixel_offsets = circle_points<Radius>();
-    auto seen_vector = std::vector<uint8_t>(heights.extent(0) * heights.extent(1), false);
+
+    // Set up the static storage for the "seen" variables
+    auto seen_storage = std::vector<uint8_t>(SeenDim * SeenDim, false);
     auto seen = Kokkos::mdspan(seen_storage.data(), SeenDim, SeenDim);
 
     // Checks if point is in array
@@ -80,7 +82,8 @@ auto detail::solve(mat_2d_i16 heights, mat_2d_i16 outputs) -> void {
         for (int64_t x = 0; x < heights.extent(0); x++) {
             // ensure the outputs starts at 0
             outputs(x, y) = 0;
-            seen_storage.fill(0);
+
+            std::fill(seen_storage.begin(), seen_storage.end(), false);
 
             // calculate how many points can be seen from (x,y)
             for (const auto& [x_offset, y_offset] : pixel_offsets) {
@@ -88,7 +91,7 @@ auto detail::solve(mat_2d_i16 heights, mat_2d_i16 outputs) -> void {
                 const auto y_ = y + y_offset;
 
                 if (is_valid_point(x_, y_)) {
-                    outputs(x, y) += detail::is_visible_from(vec2{x, y}, vec2{x_, y_}, heights, seen);
+                    outputs(x, y) += detail::is_visible_from(vec2{x, y}, vec2{x_, y_}, heights, seen, 6);
                 }
             }
         }
