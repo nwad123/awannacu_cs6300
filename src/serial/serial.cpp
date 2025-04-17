@@ -49,7 +49,7 @@ auto solve(const std::filesystem::path input_file, const std::filesystem::path o
     detail::solve(h, o);
 
     // Write results to the output file
-    write_output(output_file, outputs);
+    write_output<int16_t>(output_file, outputs);
 }
 
 auto detail::solve(mat_2d_i16 heights, mat_2d_i16 outputs) -> void {

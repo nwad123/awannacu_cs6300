@@ -9,6 +9,7 @@
 #include <vector>
 #include <span.hpp>
 #include <fmt/core.h>
+#include <fstream>
 
 // ----------- Data Structures -----------
 using vec3_i16 = vec3<int16_t>;
@@ -34,7 +35,25 @@ auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>;
 /// Write the output to the given path
 /// @param output_file The path to the output file 
 /// @param data the data to be written out
-auto write_output(const std::filesystem::path output_file, const tcb::span<int16_t> data) -> void;
+template<typename T>
+auto write_output(const std::filesystem::path output_file, const tcb::span<T> data) -> void
+{
+    // Display a warning if the input data is empty
+    if (data.size() == 0) {
+        fmt::println("[Warning]: Empty data passed to be written to {} in write_output()", output_file.string());
+    }
+
+    // open the output file and check that is opened correctly
+    std::ofstream output(output_file, std::ios::binary);
+    if (!output.is_open()) {
+        fmt::println("Failed to open output file: {}", output_file.string());
+        return;
+    }
+
+    // Write the data as a stream of bytes
+    output.write(reinterpret_cast<const char*>(data.data()), static_cast<long>(data.size() * sizeof(T)));
+    output.close();
+}
 
 /// Formats the input into a nice 2-dimensional format
 ///
