@@ -28,8 +28,11 @@ def display_raw_image(filename, width, height, window_name, dtype=np.int16):
         # Normalize the image array to the range 0-255 for display
         max_val = np.max(image_array)
         min_val = np.min(image_array)
-        if max_val > 0:
-            image_array = (image_array / max_val * 255).astype(np.uint8)
+
+        image_array = image_array - min_val
+        max_2 = np.max(image_array);
+        if max_2 > 0:
+            image_array = (image_array / max_2 * 255).astype(np.uint8)
         else:
             image_array = np.zeros_like(image_array, dtype=np.uint8)
 
