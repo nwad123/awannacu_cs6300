@@ -2,11 +2,6 @@
 #include <fstream>
 #include <iostream>
 
-auto shared() -> void
-{
-    fmt::println("I'm a shared library function!");
-}
-
 auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>
 {
     // set up an empty vector to store the data 
@@ -61,4 +56,23 @@ auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>
 
     // return our data
     return input_data;
+}
+
+auto write_output(const std::filesystem::path output_file, const tcb::span<int16_t> data) -> void
+{
+    // Display a warning if the input data is empty
+    if (data.size() == 0) {
+        fmt::println("[Warning]: Empty data passed to be written to {} in write_output()", output_file.string());
+    }
+
+    // open the output file and check that is opened correctly
+    std::ofstream output(output_file, std::ios::binary);
+    if (!output.is_open()) {
+        fmt::println("Failed to open output file: {}", output_file.string());
+        return;
+    }
+
+    // Write the data as a stream of bytes
+    output.write(reinterpret_cast<const char*>(data.data()), static_cast<long>(data.size() * sizeof(int16_t)));
+    output.close();
 }

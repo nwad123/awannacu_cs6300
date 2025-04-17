@@ -24,13 +24,16 @@ using mat_2d_f32 = Kokkos::mdspan<float, mat_2d_exts>;
 
 
 // ----------- Functions -----------
-auto shared() -> void;
-
 /// Reads the input file in the given format.
 /// @param input_file The path to the input file 
 /// @returns The data values from the input file as a std::vector
 [[nodiscard]]
 auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>;
+
+/// Write the output to the given path
+/// @param output_file The path to the output file 
+/// @param data the data to be written out
+auto write_output(const std::filesystem::path output_file, const tcb::span<int16_t> data) -> void;
 
 /// Formats the input into a nice 2-dimensional format
 ///

@@ -48,15 +48,8 @@ auto solve(const std::filesystem::path input_file, const std::filesystem::path o
     // Call the solving algorithm
     detail::solve(h, o);
 
-     // Write results to the output file
-     std::ofstream output(output_file, std::ios::binary);
-     if (!output.is_open()) {
-         fmt::println("Failed to open output file: {}", output_file.string());
-         return;
-     }
- 
-     output.write(reinterpret_cast<const char*>(outputs.data()), static_cast<long>(outputs.size() * sizeof(int16_t)));
-     output.close();
+    // Write results to the output file
+    write_output(output_file, outputs);
 }
 
 auto detail::solve(mat_2d_i16 heights, mat_2d_i16 outputs) -> void {
