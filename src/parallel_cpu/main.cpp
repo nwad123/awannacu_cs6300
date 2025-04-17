@@ -30,57 +30,25 @@ int main(int argc, char** argv) {
     }
     
 #ifdef _OMP
+    // set the number of threads to use
     omp_set_num_threads(std::stoi(argv[6]));
 #endif
+
     // Parse width and height from command line
     const size_t width = std::stoul(argv[3]);
     const size_t height = std::stoul(argv[4]);
-	const size_t angle = std::stoul(argv[5]);
-    size_t expected_size = width * height * sizeof(unsigned short);
-    
-    // Open input file
-    std::ifstream input_file(argv[1], std::ios::binary);
-    if (!input_file) {
-        std::cerr << "Error opening input file: " << argv[1] << std::endl;
-        return 1;
-    }
-    
-    // Get file size
-    input_file.seekg(0, std::ios::end);
-    std::streamsize file_size = input_file.tellg();
-    input_file.seekg(0, std::ios::beg);
-    
-    // Verify file size matches expected dimensions
-    if (file_size != expected_size) {
-        std::cerr << "Error: File size (" << file_size << " bytes) doesn't match expected dimensions: " 
-                  << width << "x" << height << " (" << expected_size << " bytes)" << std::endl;
-        return 1;
-    }
+	const int angle = std::stoi(argv[5]);
     
     // Allocate memory for height map
-    std::vector<unsigned short> height_map(width * height);
-    
-    // Read the file directly into the vector
-    input_file.read(reinterpret_cast<char*>(height_map.data()), file_size);
-    input_file.close();
-    
+    std::vector<int16_t> height_map = read_input(argv[1]);
     std::cout << "Height map loaded: " << width << "x" << height << std::endl;
     
     // Calculate visibility map
     int radius = 100;
-    std::vector<unsigned int> visibility_map = calculateVisibility(height_map, width, height, radius, angle);
+    std::vector<uint32_t> visibility_map = calculateVisibility(height_map, width, height, radius, angle);
     
-    // Write output
-    std::ofstream output_file(argv[2], std::ios::binary);
-    if (!output_file) {
-        std::cerr << "Error opening output file: " << argv[2] << std::endl;
-        return 1;
-    }
-    
-    output_file.write(reinterpret_cast<const char*>(visibility_map.data()), 
-                      visibility_map.size() * sizeof(unsigned int));
-    output_file.close();
-    
+    // Write the output
+    write_output<uint32_t>(argv[2], visibility_map);
     std::cout << "Output written to: " << argv[2] << std::endl;
     
     return 0;

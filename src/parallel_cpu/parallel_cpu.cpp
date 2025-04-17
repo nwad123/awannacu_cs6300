@@ -7,7 +7,7 @@
 #include <omp.h>
 #endif
 
-auto calculateVisibility(const std::vector<unsigned short>& height_map, 
+auto calculateVisibility(const std::vector<int16_t>& height_map, 
                          size_t width, size_t height, 
                          int radius, int angle) -> std::vector<unsigned int>
 {
@@ -21,9 +21,9 @@ auto calculateVisibility(const std::vector<unsigned short>& height_map,
     ray_directions.reserve(static_cast<uint64_t>(num_angles));
     
     for (int i = 0; i < num_angles; ++i) {
-        double angle = i * angle_step;
-        int dx = static_cast<int>(std::round(std::cos(angle) * radius));
-        int dy = static_cast<int>(std::round(std::sin(angle) * radius));
+        const double angle_ = i * angle_step;
+        int dx = static_cast<int>(std::round(std::cos(angle_) * radius));
+        int dy = static_cast<int>(std::round(std::sin(angle_) * radius));
         ray_directions.push_back({dx, dy});
     }
     
