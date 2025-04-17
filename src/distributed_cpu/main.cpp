@@ -1,7 +1,7 @@
 // This file will use the MPI library to distribute the work of the Bresenham line algorithm across multiple processes.
-// It will read in a hight map (16 bit raw) and find the output
+// It will read in a height map (16 bit raw) and find the output
 // The output will be a 32bit file which will detect the number of visible pixels from every other cell.
-// The maximum distance will be a radius of 100 pixels.
+// The maximum distance will be a RADIUS of 100 pixels.
 // each pixel in the output will be the number of visible pixels from that pixel
 
 #include <cmath>
@@ -16,49 +16,45 @@
 #include <cstdlib> // For std::abs
 #include <cstring> // For std::memcpy
 
-#include "parallel_cpu.hpp"
-// #include "core.hpp"
-// #include <fmt/core.h>
+#include "distributed_cpu.hpp"
+#include <mpi.h>
 
-// #ifdef _MPI 
-    #include <mpi.h>
-    int my_rank, comm_sz;
-    MPI_Comm comm;
-// #endif
+int my_rank, comm_sz;
+MPI_Comm comm;
 
+#define RADIUS 100
 
+// Function to get command line arguments
+void Get_arg(int argc, char** argv, int* width, int* height, int* angle);
 
-std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>& height_map, int width, int height, int radius = 100, int angle = 12) {
-    int rank, size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+// Function to calculate visibility for a portion of the map
+std::vector<unsigned int> calculateVisibilityLocal(
+    const std::vector<unsigned short>& height_map, 
+    int width, int height, 
+    int start_y, int end_y,
+    int radius, int num_angles) {
     
+    std::vector<unsigned int> local_visibility(width * (end_y - start_y), 0);
+    const int radius_squared = RADIUS * RADIUS;
     
-    std::vector<unsigned int> visibility_map(width * height, 0);
-    const int radius_squared = radius * radius;
-    
-    const int num_angles = angle;  // Number of discrete angles
     const double angle_step = 2 * M_PI / num_angles;
     
     std::vector<std::pair<int, int>> ray_directions;
-    
     ray_directions.reserve(num_angles);
     
     for (int i = 0; i < num_angles; ++i) {
         double angle = i * angle_step;
-        int dx = static_cast<int>(std::round(std::cos(angle) * radius));
-        int dy = static_cast<int>(std::round(std::sin(angle) * radius));
+        int dx = static_cast<int>(std::round(std::cos(angle) * RADIUS));
+        int dy = static_cast<int>(std::round(std::sin(angle) * RADIUS));
         ray_directions.push_back({dx, dy});
     }
     
-    // Process each pixel
-    //use parallel cpu with opeMP
-#pragma omp parallel for collapse(2) schedule(dynamic, 1)
-    for (int y = 0; y < height; ++y) {
+    // Process each pixel in assigned range
+    for (int y = start_y; y < end_y; ++y) {
         for (int x = 0; x < width; ++x) {
             // Print progress more frequently
-            if ((y * width + x) % 1000 == 0) {
-                std::cout << "\rProgress: " << (static_cast<float>(y * width + x) / (width * height)) * 100 << "%";
+            if ((y * width + x) % 1000 == 0 && my_rank == 0) {
+                std::cout << "\r" << (static_cast<float>((y - start_y) * width + x) / (width * (end_y - start_y))) * 100 << "%";
                 std::cout.flush();
             }
             
@@ -73,13 +69,12 @@ std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>&
             for (const auto& [dx, dy] : ray_directions) {
                 // Use a more efficient ray casting approach
                 // Start from the center and move outward
-                int max_steps = radius;
+                int max_steps = RADIUS;
                 int curr_x = x;
                 int curr_y = y;
                 float max_angle_seen = -std::numeric_limits<float>::infinity();
                 
                 // Step size for more efficient ray traversal
-                // For long rays, we don't need to check every pixel
                 const float ray_length = std::sqrt(dx*dx + dy*dy);
                 const float step_x = dx / ray_length;
                 const float step_y = dy / ray_length;
@@ -99,11 +94,10 @@ std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>&
                     curr_y = std::round(curr_y_f);
                     
                     // Check bounds
-                    if (curr_x < 0 || curr_x >= static_cast<int>(width) || 
-                        curr_y < 0 || curr_y >= static_cast<int>(height))
+                    if (curr_x < 0 || curr_x >= width || curr_y < 0 || curr_y >= height)
                         break;
                     
-                    // Check if we've gone too far (outside the radius)
+                    // Check if we've gone too far (outside the RADIUS)
                     int dist_squared = (curr_x - x)*(curr_x - x) + (curr_y - y)*(curr_y - y);
                     if (dist_squared > radius_squared)
                         break;
@@ -131,48 +125,48 @@ std::vector<unsigned int> calculateVisibility(const std::vector<unsigned short>&
                 }
             }
             
-            // Store the visibility count
-            visibility_map[y * width + x] = visible_count;
+            // Store the visibility count in the local map
+            local_visibility[(y - start_y) * width + x] = visible_count;
         }
     }
-    
-    std::cout << "\rProgress: 100%" << std::endl;
-    return visibility_map;
+    if(my_rank == 0)
+        std::cout << "\r100\% Complete" << std::endl;
+    return local_visibility;
 }
 
-// Function to get command line arguments
-Get_arg(int argc, char* argv[], char** input_file_name, char** output_file_name, int* width, int* height, int* angle);
-
 int main(int argc, char** argv) {
-
-
     MPI_Init(&argc, &argv);
     
-    //MPI specific initialization
-    int initialized, rank, size;
+    // MPI specific initialization
+    int initialized;
     MPI_Initialized(&initialized);
     comm = MPI_COMM_WORLD;
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
-    //parse arg input
-
-    int width, height, angle;
-    Get_arg(argc, argv, &input_file_name, &output_file_name, &width, &height, &angle);
-   
-
-    int expected_size = width * height * sizeof(unsigned short);
     
-    std::vector<unsigned short> height_map(width * height);
-
-
-    if(my_rank == 0) {
+    // Parse command line arguments
+    int width, height, angle;
+    Get_arg(argc, argv, &width, &height, &angle);
+       
+    // Only rank 0 reads the input file
+    std::vector<unsigned short> height_map;
+    
+    if (my_rank == 0) {
+        height_map.resize(width * height);
+        
+        // Double check inputs
+        printf("Parameters: width=%d, height=%d, angle=%d\n", width, height, angle);
+        
         // Open input file
         std::ifstream input_file(argv[1], std::ios::binary);
         if (!input_file) {
             std::cerr << "Error opening input file: " << argv[1] << std::endl;
+            MPI_Abort(MPI_COMM_WORLD, 1);
             return 1;
         }
-           
+        
+        int expected_size = width * height * sizeof(unsigned short);
+        
         // Get file size
         input_file.seekg(0, std::ios::end);
         std::streamsize file_size = input_file.tellg();
@@ -182,11 +176,9 @@ int main(int argc, char** argv) {
         if (file_size != expected_size) {
             std::cerr << "Error: File size (" << file_size << " bytes) doesn't match expected dimensions: " 
                     << width << "x" << height << " (" << expected_size << " bytes)" << std::endl;
-            mpi_Finalize();
+            MPI_Abort(MPI_COMM_WORLD, 1);
             return 1;
         }
-        
-        // Allocate memory for height map
         
         // Read the file directly into the vector
         input_file.read(reinterpret_cast<char*>(height_map.data()), file_size);
@@ -194,51 +186,103 @@ int main(int argc, char** argv) {
         
         std::cout << "Height map loaded: " << width << "x" << height << std::endl;
     }
-    // Calculate visibility map
-    int radius = 100;
-
-
-    std::vector<unsigned int> visibility_map = calculateVisibility(height_map, width, height, radius, angle);
-    MPI_Finalize();
     
-    // Write output
-    std::ofstream output_file(argv[2], std::ios::binary);
-    if (!output_file) {
-        std::cerr << "Error opening output file: " << argv[2] << std::endl;
-        return 1;
+    // Broadcast height map dimensions to all processes
+    MPI_Bcast(&width, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&height, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    
+    // Resize height_map vector on all non-root processes
+    if (my_rank != 0) {
+        height_map.resize(width * height);
     }
     
-    output_file.write(reinterpret_cast<const char*>(visibility_map.data()), 
-                      visibility_map.size() * sizeof(unsigned int));
-    output_file.close();
+    // Broadcast the entire height map to all processes
+    MPI_Bcast(height_map.data(), width * height, MPI_UNSIGNED_SHORT, 0, MPI_COMM_WORLD);
     
-    std::cout << "Output written to: " << argv[2] << std::endl;
+    // Initialize visibility map on root process
+    std::vector<unsigned int> visibility_map;
+    if (my_rank == 0) {
+        visibility_map.resize(width * height, 0);
+    }
+    
+    // Divide work by rows
+    int rows_per_proc = height / comm_sz;
+    int remaining_rows = height % comm_sz;
+    
+    // Calculate start and end rows for each process
+    int start_row = my_rank * rows_per_proc + std::min(my_rank, remaining_rows);
+    int end_row = start_row + rows_per_proc + (my_rank < remaining_rows ? 1 : 0);
 
-
+    // Calculate local visibility
+    std::vector<unsigned int> local_visibility = calculateVisibilityLocal(
+        height_map, width, height, start_row, end_row, RADIUS, angle);
+    
+    // Prepare for gathering results
+    std::vector<int> recv_counts;
+    std::vector<int> displacements;
+    
+    //manually divide the work into rows,
+    //because scatterv wasn't working :'( 
+    //gatherv does, though... so you know.
+    if (my_rank == 0) {
+        recv_counts.resize(comm_sz);
+        displacements.resize(comm_sz);
+        
+        int disp = 0;
+        for (int i = 0; i < comm_sz; i++) {
+            int proc_rows = rows_per_proc + (i < remaining_rows ? 1 : 0);
+            recv_counts[i] = proc_rows * width;
+            displacements[i] = disp;
+            disp += recv_counts[i];
+        }
+    }
+    
+    // Gather all local visibility results to the root process
+    MPI_Gatherv(
+        local_visibility.data(), local_visibility.size(), MPI_UNSIGNED,
+        visibility_map.data(), recv_counts.data(), displacements.data(), MPI_UNSIGNED,
+        0, MPI_COMM_WORLD
+    );
+    
+    // Write output
+    if (my_rank == 0) {
+        std::ofstream output_file(argv[2], std::ios::binary);
+        if (!output_file) {
+            std::cerr << "Error opening output file: " << argv[2] << std::endl;
+            MPI_Abort(MPI_COMM_WORLD, 1);
+            return 1;
+        }
+        
+        output_file.write(reinterpret_cast<const char*>(visibility_map.data()), 
+                        visibility_map.size() * sizeof(unsigned int));
+        output_file.close();
+        
+        std::cout << "Output written to: " << argv[2] << std::endl;
+    }
+    
+    MPI_Finalize();
     return 0;
 }
 
-
-
-void Get_arg(int argc, char* argv[], int* width, int* height, int* angle) {
+void Get_arg(int argc, char** argv, int* width, int* height, int* angle) {
     if (my_rank == 0) {
         if (argc == 6) {
-            *width             = std::stof(argv[3]);
-            *height            = std::stoi(argv[4]);
-            *angle             = std::stoi(argv[5]);
+            *width = std::stoi(argv[3]);
+            *height = std::stoi(argv[4]);
+            *angle = std::stoi(argv[5]);
         } else {
-        std::cerr << "Usage: " << argv[0] << " <read_file> <write_file> <width> <height> <angle> <threads>" << std::endl;
+            std::cerr << "Usage: " << argv[0] << " <read_file> <write_file> <width> <height> <angle>" << std::endl;
             *angle = -1;
         }
     }
-    // Broadcast all parameters EXCEPT string names
-
-    MPI_Bcast(width, 1, MPI_INT, 0, comm);
-    MPI_Bcast(height, 1, MPI_INT, 0, comm);
-    MPI_Bcast(angle, 1, MPI_INT, 0, comm);
-
+    
+    // Broadcast all parameters
+    MPI_Bcast(width, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(height, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(angle, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    
     if (*angle <= 0) {
-        //kill program if usage isn't correct.
+        // Kill program if usage isn't correct
         MPI_Finalize();
         exit(0);
     }
