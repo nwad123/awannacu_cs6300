@@ -4,6 +4,7 @@
 #include "vec3.hpp"
 #include "vec2.hpp"
 #include "mdspan.hpp"
+#include "timer.hpp"
 #include <filesystem>
 #include <vector>
 #include <span.hpp>
