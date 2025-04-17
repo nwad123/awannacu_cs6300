@@ -139,7 +139,9 @@ int main(int argc, char** argv) {
         return 1;
     }
     
+#ifdef _OMP
     omp_set_num_threads(std::stoi(argv[6]));
+#endif
     // Parse width and height from command line
     int width = std::stoi(argv[3]);
     int height = std::stoi(argv[4]);
