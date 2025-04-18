@@ -33,6 +33,7 @@ auto calculateVisibilityLocal(
     std::vector<unsigned int> local_visibility(width * (end_y - start_y), 0);
     const int radius_squared = radius * radius;
     
+    // the distance in radians between reach angle
     const double angle_step = 2 * M_PI / num_angles;
     
     std::vector<std::pair<float, float>> ray_directions;
@@ -57,7 +58,7 @@ auto calculateVisibilityLocal(
             
             unsigned short current_height = height_map[y * width + x];
             
-            // Start with 1 (the pixel itself is always visible)
+            // Start the count at this cell as 1 (the pixel itself is always visible)
             unsigned int visible_count = 1;
             
             // Cast rays in different directions
@@ -71,9 +72,6 @@ auto calculateVisibilityLocal(
                 const float step_x = dx / ray_length;
                 const float step_y = dy / ray_length;
                 
-                // Curr_(x,y) represents the current pixel
-                int curr_x{};
-                int curr_y{};
                 // Start at center of pixel for our floating point values
                 float curr_x_f = x + 0.5f;
                 float curr_y_f = y + 0.5f;
@@ -84,8 +82,8 @@ auto calculateVisibilityLocal(
                     curr_y_f += step_y;
                     
                     // Round to nearest pixel
-                    curr_x = std::round(curr_x_f);
-                    curr_y = std::round(curr_y_f);
+                    const int curr_x = std::round(curr_x_f);
+                    const int curr_y = std::round(curr_y_f);
                     
                     // Check bounds
                     if (curr_x < 0 || curr_x >= width || curr_y < 0 || curr_y >= height)

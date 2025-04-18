@@ -14,12 +14,15 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
     std::vector<unsigned int> visibility_map(width * height, 0);
     const int radius_squared = radius * radius;
     
-    const int num_angles = std::abs(angle);  // Number of discrete angles
+    // Number of discrete angles
+    const int num_angles = std::abs(angle); 
+    // The distance between each angle in radians
     const double angle_step = 2 * M_PI / num_angles;
     
     std::vector<std::pair<float, float>> ray_directions;
     ray_directions.reserve(static_cast<uint64_t>(num_angles));
     
+    // precalculate the angle of the rays to be cast
     for (int i = 0; i < num_angles; ++i) {
         const double angle_ = i * angle_step;
         float dx = std::round(std::cos(angle_) * radius);
@@ -39,10 +42,8 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
             }
             
             unsigned short current_height = height_map[y * width + x];
-            // Skip walls
-            if (current_height == 0) continue;
             
-            // Start with 1 (the pixel itself is always visible)
+            // Start the count at this cell as 1 (the pixel itself is always visible)
             unsigned int visible_count = 1;
             
             // Cast rays in different directions
@@ -57,14 +58,9 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
                 const float ray_length = std::sqrt(dx*dx + dy*dy);
                 const float step_x = dx / ray_length;
                 const float step_y = dy / ray_length;
-                
-                int curr_x{};
-                int curr_y{};
 
                 float curr_x_f = x + 0.5f;  // Start at center of pixel
                 float curr_y_f = y + 0.5f;
-                
-                bool hit_wall = false;
                 
                 for (int step = 1; step <= max_steps; ++step) {
                     // Move along the ray
@@ -72,8 +68,8 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
                     curr_y_f += step_y;
                     
                     // Round to nearest pixel
-                    curr_x = std::round(curr_x_f);
-                    curr_y = std::round(curr_y_f);
+                    const int curr_x = std::round(curr_x_f);
+                    const int curr_y = std::round(curr_y_f);
                     
                     // Check bounds
                     if (curr_x < 0 || curr_x >= static_cast<int>(width) || 
@@ -87,11 +83,6 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
                     
                     // Get height at current position
                     unsigned short point_height = height_map[curr_y * width + curr_x];
-                    
-                    // Skip if it's a wall (height 0)
-                    if (point_height == 0) {
-                        break;
-                    }
                     
                     // Calculate angle to determine visibility
                     float distance = std::sqrt(dist_squared);
@@ -113,5 +104,6 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
     }
     
     std::cout << "\rProgress: 100% " << std::endl;
+
     return visibility_map;
 }
