@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <utility>
+#include "core.hpp"
 
 auto Get_arg(int argc, char** argv, const int rank) -> std::tuple<int, int, int> {
     // initial parameters to the error state
@@ -28,35 +29,54 @@ auto calculateVisibilityLocal(
     const std::vector<int16_t>& height_map, 
     const int width, const int height, 
     const int start_y, const int end_y, const int rank,
-    const int radius, const int num_angles) -> std::vector<unsigned int> {
-    
-    std::vector<unsigned int> local_visibility(width * (end_y - start_y), 0);
+    const int radius, const int num_angles, const int vantage) -> std::vector<unsigned int>
+{
+    // r^2 used for bounds detection later
     const int radius_squared = radius * radius;
     
+    // The count of how many elements are visible from the local
+    // cells
+    std::vector<unsigned int> local_visibility(width * (end_y - start_y), 0);
+    
+    // This is the storage for the `seen` variable
+    std::vector<uint8_t> seen_vector(radius_squared, false);
+    // This keeps track of whether or not we have already counted this cell or not.
+    auto seen = Kokkos::mdspan(seen_vector.data(), radius, radius);
+
+    // This resets the seen vector, effectively declaring we have seen nothing
+    auto reset_seen = [&seen_vector] {
+        std::fill(seen_vector.begin(), seen_vector.end(), false);
+    };
+
     // the distance in radians between reach angle
     const double angle_step = 2 * M_PI / num_angles;
     
+    // The points for each ray
     std::vector<std::pair<float, float>> ray_directions;
     ray_directions.reserve(num_angles);
     
     // precalculate the angle of the rays to be cast
     for (int i = 0; i < num_angles; ++i) {
         double angle = i * angle_step;
-        float dx = std::cos(angle) * radius;
-        float dy = std::sin(angle) * radius;
-        ray_directions.push_back({dx, dy});
+        const float dx = std::cos(angle) * radius;
+        const float dy = std::sin(angle) * radius;
+        ray_directions.emplace_back(dx, dy);
     }
     
     // Process each pixel in assigned range
     for (int y = start_y; y < end_y; ++y) {
         for (int x = 0; x < width; ++x) {
-            // Print progress more frequently
+            // Print progress
             if ((y * width + x) % 1000 == 0 && rank == 0) {
                 std::cout << "\r" << (static_cast<float>((y - start_y) * width + x) / (width * (end_y - start_y))) * 100 << "%";
                 std::cout.flush();
             }
             
-            unsigned short current_height = height_map[y * width + x];
+            // Reset the seen array
+            reset_seen();
+            
+            // get the current height
+            const unsigned short current_height = height_map[y * width + x] + vantage;
             
             // Start the count at this cell as 1 (the pixel itself is always visible)
             unsigned int visible_count = 1;
@@ -107,6 +127,13 @@ auto calculateVisibilityLocal(
                     if (angle > max_angle_seen) {
                         max_angle_seen = angle;
                         visible_count++;
+
+                        // Check if we've seen this cell or not yet
+                        auto& seen_this = seen(curr_x - (x - radius), curr_y - (y - radius));
+                        if (!seen_this) {
+                            visible_count++;
+                            seen_this = true;
+                        }
                     }
                 }
             }
@@ -116,8 +143,7 @@ auto calculateVisibilityLocal(
         }
     }
 
-    if(rank == 0)
-        std::cout << "\r100% Complete" << std::endl;
+    fmt::println("Rank {} finished.", rank);
 
     return local_visibility;
 }

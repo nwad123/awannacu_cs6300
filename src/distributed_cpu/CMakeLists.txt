@@ -17,7 +17,7 @@ if (MPI_CXX_FOUND)
     #  -g for profiling symbols
     set(INTERPROCEDURAL_OPTIMIZATION TRUE)
     target_compile_options(dist_cpu 
-    PRIVATE -O3 -DNDEBUG -g
+        PRIVATE -O0 -DDEBUG -g3
     )
 
     target_project_warnings(dist_cpu)

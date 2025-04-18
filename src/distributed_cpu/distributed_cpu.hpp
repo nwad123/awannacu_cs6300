@@ -24,4 +24,4 @@ auto calculateVisibilityLocal(
     const std::vector<int16_t>& height_map, 
     const int width, const int height, 
     const int start_y, const int end_y, const int rank,
-    const int radius, const int num_angles) -> std::vector<unsigned int>;
+    const int radius, const int num_angles, const int vantage = 6) -> std::vector<unsigned int>;
