@@ -41,16 +41,16 @@ auto detail::circle_points() -> std::vector<std::pair<int64_t, int64_t>>
     int64_t y = Radius;
     int64_t d = 3 - 2 * Radius;
 
-    // Calculate values of the first octant (and then swap the values around for the rest)
     while (x <= y) {
-        points.push_back({x, y});     // Octant 1
-        points.push_back({y, x});     // Octant 2
-        points.push_back({-x, y});    // Octant 4
-        points.push_back({-y, x});    // Octant 3
-        points.push_back({x, -y});    // Octant 8
-        points.push_back({y, -x});    // Octant 7
-        points.push_back({-x, -y});   // Octant 5
-        points.push_back({-y, -x});   // Octant 6
+        // Calculate values of the each octant
+        points.emplace_back(x, y);
+        points.emplace_back(y, x);
+        points.emplace_back(-x, y);
+        points.emplace_back(-y, x);
+        points.emplace_back(x, -y);
+        points.emplace_back(y, -x);
+        points.emplace_back(-x, -y);
+        points.emplace_back(-y, -x);
         if (d < 0) {
             d = d + 4 * x + 6;
         } else {
@@ -171,8 +171,8 @@ auto detail::is_visible_from(const vec2<T> from, const vec2<T> to, const mat_2d_
             max_angle = angle_approx;
             const auto x_ = translate_to_seen_coordinates_x(x);
             const auto y_ = translate_to_seen_coordinates_y(y);
+            
             auto& seen_ = seen(x_, y_);
-
             if (!seen_) {
                 seen_count++;
                 seen_ = true;
