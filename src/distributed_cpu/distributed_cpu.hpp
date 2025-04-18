@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <cstdint>
+#include <tuple>
 
 /// @brief Parses the command line arguments
 /// @param argc argc from main
