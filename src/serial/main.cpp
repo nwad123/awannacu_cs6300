@@ -22,13 +22,14 @@ auto main(int argc, char** argv) -> int
         }
     }();
 
-    const auto start = std::chrono::high_resolution_clock::now();
+    // time the algorithm
+    timer time;
+    time.reset();
     
     solve(args[1], args[2], width, height);
 
-    const auto end = std::chrono::high_resolution_clock::now();
-    const auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    fmt::println("Elapsed time: {} ms", elapsed_ms);
+    // display the elapsed time
+    fmt::println("Elapsed time: {} ms", time.read());
 
     return EXIT_SUCCESS;
 }

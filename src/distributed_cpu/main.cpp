@@ -80,6 +80,10 @@ int main(int argc, char** argv) {
     if (my_rank == 0) {
         visibility_map.resize(width * height, 0);
     }
+
+     // Time the algorithm. Only the rank 0 process actually prints this
+     timer time;
+     time.reset();
     
     // Divide work by rows
     int rows_per_proc = height / comm_sz;
@@ -119,6 +123,11 @@ int main(int argc, char** argv) {
         visibility_map.data(), recv_counts.data(), displacements.data(), MPI_UNSIGNED,
         0, MPI_COMM_WORLD
     );
+
+    // Display timing
+    if (my_rank == 0) {
+        fmt::println("Elapsed time: {} ms", time.read());
+    }
     
     // Write output
     if (my_rank == 0) {

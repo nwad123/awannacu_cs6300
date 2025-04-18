@@ -43,9 +43,16 @@ int main(int argc, char** argv) {
     std::vector<int16_t> height_map = read_input(argv[1]);
     std::cout << "Height map loaded: " << width << "x" << height << std::endl;
     
+    // time the algorithm
+    timer time;
+    time.reset();
+
     // Calculate visibility map
     int radius = 100;
     std::vector<uint32_t> visibility_map = calculateVisibility(height_map, width, height, radius, angle);
+
+    // display the elapsed time
+    fmt::println("Elapsed time: {} ms", time.read());
     
     // Write the output
     write_output<uint32_t>(argv[2], visibility_map);
