@@ -11,14 +11,28 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
                          size_t width, size_t height, 
                          int radius, int angle) -> std::vector<unsigned int>
 {
-    std::vector<unsigned int> visibility_map(width * height, 0);
+    // r^2 used for bounds detection later
     const int radius_squared = radius * radius;
+
+    // The counts of how many elements are visible from the current cell
+    std::vector<unsigned int> visibility_map(width * height, 0);
+
+    // This is the storage for the `seen` variable
+    std::vector<uint8_t> seen_vector(radius_squared, false);
+    // This keeps track of whether or not we have already counted this cell or not.
+    auto seen = Kokkos::mdspan(seen_vector.data(), radius, radius);
+
+    // This resets the seen vector, effectively declaring we have seen nothing
+    auto reset_seen = [&seen_vector] {
+        std::fill(seen_vector.begin(), seen_vector.end(), false);
+    };
     
     // Number of discrete angles
-    const int num_angles = std::abs(angle); 
+    const int num_angles = std::abs(angle);
     // The distance between each angle in radians
     const double angle_step = 2 * M_PI / num_angles;
     
+    // The end points of each ray being cast
     std::vector<std::pair<float, float>> ray_directions;
     ray_directions.reserve(static_cast<uint64_t>(num_angles));
     
@@ -31,16 +45,20 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
     }
     
     // Process each pixel
-    //use parallel cpu with opeMP
+    // use parallel cpu with OpenMP
 #pragma omp parallel for collapse(2) schedule(dynamic, 1)
     for (size_t y = 0; y < height; ++y) {
         for (size_t x = 0; x < width; ++x) {
-            // Print progress more frequently
+            // Print progress
             if ((y * width + x) % 1000 == 0) {
                 std::cout << "\rProgress: " << (static_cast<float>(y * width + x) / (width * height)) * 100 << "%";
                 std::cout.flush();
             }
+
+            // Reset the seen array
+            reset_seen();
             
+            // get the current height
             unsigned short current_height = height_map[y * width + x];
             
             // Start the count at this cell as 1 (the pixel itself is always visible)
@@ -50,7 +68,6 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
             for (const auto& [dx, dy] : ray_directions) {
                 // Use a more efficient ray casting approach
                 // Start from the center and move outward
-                int max_steps = radius;
                 float max_angle_seen = -std::numeric_limits<float>::infinity();
                 
                 // Step size for more efficient ray traversal
@@ -62,7 +79,7 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
                 float curr_x_f = x + 0.5f;  // Start at center of pixel
                 float curr_y_f = y + 0.5f;
                 
-                for (int step = 1; step <= max_steps; ++step) {
+                while(true) {
                     // Move along the ray
                     curr_x_f += step_x;
                     curr_y_f += step_y;
@@ -81,6 +98,14 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
                     if (dist_squared > radius_squared)
                         break;
                     
+                    // Check if we've seen this cell or not yet
+                    auto& seen_this = seen(curr_x - (x - radius), curr_y - (y - radius));
+                    if (seen_this)
+                        continue;
+                    else {
+                        seen_this = true;
+                    }
+
                     // Get height at current position
                     unsigned short point_height = height_map[curr_y * width + curr_x];
                     
