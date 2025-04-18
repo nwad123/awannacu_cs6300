@@ -9,7 +9,7 @@
 
 auto calculateVisibility(const std::vector<int16_t>& height_map, 
                          size_t width, size_t height, 
-                         int radius, int angle) -> std::vector<unsigned int>
+                         const int radius, const int angle, const int vantage) -> std::vector<unsigned int>
 {
     // r^2 used for bounds detection later
     const int radius_squared = radius * radius;
@@ -59,7 +59,7 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
             reset_seen();
             
             // get the current height
-            unsigned short current_height = height_map[y * width + x];
+            unsigned short current_height = height_map[y * width + x] + vantage;
             
             // Start the count at this cell as 1 (the pixel itself is always visible)
             unsigned int visible_count = 1;
@@ -128,7 +128,8 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
         }
     }
     
-    std::cout << "\rProgress: 100% " << std::endl;
+    // Extra spaces are to ensure previous result is cleared
+    std::cout << "\rProgress: 100%     " << std::endl;
 
     return visibility_map;
 }
