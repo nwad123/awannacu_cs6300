@@ -76,6 +76,7 @@ auto detail::solve(mat_2d_i16 heights, mat_2d_i16 outputs) -> void {
             // ensure the outputs starts at 0
             outputs(x, y) = 0;
 
+            // reset the seen storage
             std::fill(seen_storage.begin(), seen_storage.end(), false);
 
             // calculate how many points can be seen from (x,y)
