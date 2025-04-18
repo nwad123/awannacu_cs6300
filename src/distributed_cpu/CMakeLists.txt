@@ -11,5 +11,14 @@ if (MPI_CXX_FOUND)
     target_link_libraries(dist_cpu PRIVATE shared_lib)
     target_link_libraries(dist_cpu PRIVATE MPI::MPI_CXX)
 
+    # Set compiler optimizations
+    #  -O3 for speed
+    #  -DNDEBUG for no debug functionality
+    #  -g for profiling symbols
+    set(INTERPROCEDURAL_OPTIMIZATION TRUE)
+    target_compile_options(dist_cpu 
+    PRIVATE -O3 -DNDEBUG -g
+    )
+
     target_project_warnings(dist_cpu)
 endif()
