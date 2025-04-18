@@ -20,13 +20,10 @@
 #include "core.hpp"
 #include <mpi.h>
 
+// Globals
 int my_rank, comm_sz;
 MPI_Comm comm;
-
-#define RADIUS 100
-
-// Function to get command line arguments
-void Get_arg(int argc, char** argv, int* width, int* height, int* angle);
+constexpr int RADIUS = 100;
 
 int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
@@ -41,8 +38,6 @@ int main(int argc, char** argv) {
     // Parse command line arguments
     auto [width, height, angle] = Get_arg(argc, argv, my_rank);
 
-    
-
     // Broadcast all parameters across processes
     MPI_Bcast(&width, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&height, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -54,6 +49,7 @@ int main(int argc, char** argv) {
         if (my_rank == 0)
             std::cout << "Invalid input arguments, exiting." << std::endl;
 
+        // If the arguments are inalid finish and return 1
         MPI_Finalize();
         return 1;
     }
@@ -130,6 +126,7 @@ int main(int argc, char** argv) {
         std::cout << "Output written to: " << argv[2] << std::endl;
     }
     
+    // Finish and return 0
     MPI_Finalize();
     return 0;
 }

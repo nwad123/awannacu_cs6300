@@ -5,8 +5,11 @@
 #include <utility>
 
 auto Get_arg(int argc, char** argv, const int rank) -> std::tuple<int, int, int> {
+    // initial parameters to the error state
     int width{-1}, height{-1}, angle{-1};
 
+    // if the rank is 0 then parse the arguments and print the usage if
+    // the arguments are incorrect
     if (rank == 0) {
         if (argc == 6) {
             width = std::stoi(argv[3]);
@@ -35,6 +38,7 @@ auto calculateVisibilityLocal(
     std::vector<std::pair<int, int>> ray_directions;
     ray_directions.reserve(num_angles);
     
+    // precalculate the angle of the rays to be cast
     for (int i = 0; i < num_angles; ++i) {
         double angle = i * angle_step;
         int dx = static_cast<int>(std::round(std::cos(angle) * radius));
