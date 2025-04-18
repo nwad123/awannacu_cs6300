@@ -35,14 +35,14 @@ auto calculateVisibilityLocal(
     
     const double angle_step = 2 * M_PI / num_angles;
     
-    std::vector<std::pair<int, int>> ray_directions;
+    std::vector<std::pair<float, float>> ray_directions;
     ray_directions.reserve(num_angles);
     
     // precalculate the angle of the rays to be cast
     for (int i = 0; i < num_angles; ++i) {
         double angle = i * angle_step;
-        int dx = static_cast<int>(std::round(std::cos(angle) * radius));
-        int dy = static_cast<int>(std::round(std::sin(angle) * radius));
+        float dx = std::cos(angle) * radius;
+        float dy = std::sin(angle) * radius;
         ray_directions.push_back({dx, dy});
     }
     

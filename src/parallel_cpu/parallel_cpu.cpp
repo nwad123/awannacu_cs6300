@@ -17,13 +17,13 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
     const int num_angles = std::abs(angle);  // Number of discrete angles
     const double angle_step = 2 * M_PI / num_angles;
     
-    std::vector<std::pair<int, int>> ray_directions;
+    std::vector<std::pair<float, float>> ray_directions;
     ray_directions.reserve(static_cast<uint64_t>(num_angles));
     
     for (int i = 0; i < num_angles; ++i) {
         const double angle_ = i * angle_step;
-        int dx = static_cast<int>(std::round(std::cos(angle_) * radius));
-        int dy = static_cast<int>(std::round(std::sin(angle_) * radius));
+        float dx = std::round(std::cos(angle_) * radius);
+        float dy = std::round(std::sin(angle_) * radius);
         ray_directions.push_back({dx, dy});
     }
     
