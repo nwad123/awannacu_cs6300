@@ -97,14 +97,6 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
                     int dist_squared = (curr_x - x)*(curr_x - x) + (curr_y - y)*(curr_y - y);
                     if (dist_squared > radius_squared)
                         break;
-                    
-                    // Check if we've seen this cell or not yet
-                    auto& seen_this = seen(curr_x - (x - radius), curr_y - (y - radius));
-                    if (seen_this)
-                        continue;
-                    else {
-                        seen_this = true;
-                    }
 
                     // Get height at current position
                     unsigned short point_height = height_map[curr_y * width + curr_x];
@@ -118,7 +110,13 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
                     // the pixel is visible
                     if (angle > max_angle_seen) {
                         max_angle_seen = angle;
-                        visible_count++;
+                        
+                        // Check if we've seen this cell or not yet
+                        auto& seen_this = seen(curr_x - (x - radius), curr_y - (y - radius));
+                        if (!seen_this) {
+                            visible_count++;
+                            seen_this = true;
+                        }
                     }
                 }
             }
