@@ -59,7 +59,7 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
             reset_seen();
             
             // get the current height
-            unsigned short current_height = height_map[y * width + x] + vantage;
+            const unsigned short current_height = height_map[y * width + x] + vantage;
             
             // Start the count at this cell as 1 (the pixel itself is always visible)
             unsigned int visible_count = 1;
@@ -68,7 +68,7 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
             for (const auto& [dx, dy] : ray_directions) {
                 // Use a more efficient ray casting approach
                 // Start from the center and move outward
-                float max_angle_seen = -std::numeric_limits<float>::infinity();
+                float max_angle_seen = std::numeric_limits<float>::lowest();
                 
                 // Step size for more efficient ray traversal
                 // For long rays, we don't need to check every pixel
@@ -108,7 +108,7 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
                     
                     // If the angle is greater than the maximum seen so far,
                     // the pixel is visible
-                    if (angle > max_angle_seen) {
+                    if (angle >= max_angle_seen) {
                         max_angle_seen = angle;
                         
                         // Check if we've seen this cell or not yet
