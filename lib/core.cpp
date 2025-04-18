@@ -1,11 +1,5 @@
 #include "core.hpp"
-#include <fstream>
 #include <iostream>
-
-auto shared() -> void
-{
-    fmt::println("I'm a shared library function!");
-}
 
 auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>
 {

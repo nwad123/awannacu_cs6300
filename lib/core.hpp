@@ -4,10 +4,12 @@
 #include "vec3.hpp"
 #include "vec2.hpp"
 #include "mdspan.hpp"
+#include "timer.hpp"
 #include <filesystem>
 #include <vector>
 #include <span.hpp>
 #include <fmt/core.h>
+#include <fstream>
 
 // ----------- Data Structures -----------
 using vec3_i16 = vec3<int16_t>;
@@ -24,13 +26,34 @@ using mat_2d_f32 = Kokkos::mdspan<float, mat_2d_exts>;
 
 
 // ----------- Functions -----------
-auto shared() -> void;
-
 /// Reads the input file in the given format.
 /// @param input_file The path to the input file 
 /// @returns The data values from the input file as a std::vector
 [[nodiscard]]
 auto read_input(const std::filesystem::path input_file) -> std::vector<int16_t>;
+
+/// Write the output to the given path
+/// @param output_file The path to the output file 
+/// @param data the data to be written out
+template<typename T>
+auto write_output(const std::filesystem::path output_file, const tcb::span<T> data) -> void
+{
+    // Display a warning if the input data is empty
+    if (data.size() == 0) {
+        fmt::println("[Warning]: Empty data passed to be written to {} in write_output()", output_file.string());
+    }
+
+    // open the output file and check that is opened correctly
+    std::ofstream output(output_file, std::ios::binary);
+    if (!output.is_open()) {
+        fmt::println("Failed to open output file: {}", output_file.string());
+        return;
+    }
+
+    // Write the data as a stream of bytes
+    output.write(reinterpret_cast<const char*>(data.data()), static_cast<long>(data.size() * sizeof(T)));
+    output.close();
+}
 
 /// Formats the input into a nice 2-dimensional format
 ///
