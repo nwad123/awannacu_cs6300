@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 import argparse
 
-def display_raw_image(filename, width, height, window_name, dtype=np.int16):
+def display_raw_image(filename, width, height, window_name, dtype):
     """
     Reads a raw image file, converts it to a displayable format, and shows it in a window.
 
@@ -12,7 +12,7 @@ def display_raw_image(filename, width, height, window_name, dtype=np.int16):
         filename (str): The path to the .raw image file.
         width (int): The width of the image. 
         height (int): The height of the image.
-        dtype (numpy.dtype, optional): The data type of the raw image file. Defaults to np.int16.
+        dtype (numpy.dtype): The data type of the raw image file.
     """
     try:
         # Read the raw data from the file
@@ -49,17 +49,27 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Display a raw image file.")
     parser.add_argument("width", type=int, help="Width of the image")
     parser.add_argument("height", type=int, help="Height of the image")
+    parser.add_argument("dtype", choices=["np.int16", "np.int32"], help="Data type of the raw image file (np.int16 or np.int32)")
     parser.add_argument("filenames", nargs='+', help="Paths to the raw image files")
+    
     args = parser.parse_args()
-
 
     width = args.width
     height = args.height
+    
+    if args.dtype == "np.int16":
+        dtype = np.int16
+    elif args.dtype == "np.int32":
+        dtype = np.int32
+    else:
+        print("Invalid data type specified.")
+        exit()
+
     filenames = args.filenames
 
     for i, filename in enumerate(filenames):
         window_name = f"Raw Image {i+1}: {filename}"
-        display_raw_image(filename, width, height, window_name)
+        display_raw_image(filename, width, height, window_name, dtype)
     
     cv2.waitKey(0)  # Wait for a key press to close the window
     cv2.destroyAllWindows()  # Clean up
