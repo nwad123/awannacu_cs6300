@@ -1,9 +1,9 @@
 # Get MPI 
 include(FindMPI)
 
-if (MPI_FOUND)
+if (MPI_CXX_FOUND)
     # Set the exectuable sources
-    set(SRCS main.cpp)
+    set(SRCS main.cpp distributed_cpu.cpp)
 
     add_executable(dist_cpu ${SRCS})
     target_include_directories(dist_cpu PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
