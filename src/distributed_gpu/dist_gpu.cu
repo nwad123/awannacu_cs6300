@@ -20,7 +20,7 @@ __global__ void calculate_visibility_kernel(
     int y = (blockIdx.y * blockDim.y + threadIdx.y) + y_offset;
 
     // check bounds
-    if (x >= width || y >= height) { return; }
+    if (x >= width || y >= height) { printf("%d,%d\n", x, y); return; }
 
     const int radius_squared = radius * radius;
     const int index = y * width + x;
