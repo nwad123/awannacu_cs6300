@@ -160,7 +160,21 @@ std::vector<unsigned int> calculate_visibility_cuda(
     // copy result back to host
     cudaMemcpy(visibility_map.data(), d_visibility_map, visibility_map_size, cudaMemcpyDeviceToHost);
 
-    std::cout << "CUDA completed on process " << my_rank << std::endl;
+    // Free device memory
+    cudaFree(d_height_map);
+    cudaFree(d_visibility_map);
+    cudaFree(d_ray_directions_x);
+    cudaFree(d_ray_directions_y);
 
+    // print a sum of the visibility_map
+    unsigned int sum = 0;
+    for (unsigned int val : visibility_map) {
+        sum += val;
+    }
+    std::cout << "Sum of visibility map on process " << my_rank << ": " << sum << std::endl;
+
+
+    std::cout << "CUDA completed on process " << my_rank << std::endl;
+    
     return visibility_map;
 }
