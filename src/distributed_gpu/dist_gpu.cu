@@ -139,12 +139,14 @@ std::vector<unsigned int> calculate_visibility_cuda(
 
     // Set up grid and block dimensions
     dim3 block_size(16, 16);
-    dim3 grid_size((width + block_size.x - 1) / block_size.x, (height + block_size.y - 1) / block_size.y);
+    dim3 grid_size((width + block_size.x - 1) / block_size.x, (my_height + block_size.y - 1) / block_size.y);
 
     // Launch kernel
     std::cout << "Launching CUDA kernel with grid size: " << grid_size.x << "x" << grid_size.y
               << ", block size: " << block_size.x << "x" << block_size.y
               << " from process " << my_rank << std::endl;
+
+    std::cout << "Offset, process: " << my_y_offset << ", " << my_rank << std::endl;
 
     calculate_visibility_kernel<<<grid_size, block_size>>>(
         d_height_map, d_visibility_map, 
@@ -158,7 +160,7 @@ std::vector<unsigned int> calculate_visibility_cuda(
     // copy result back to host
     cudaMemcpy(visibility_map.data(), d_visibility_map, visibility_map_size, cudaMemcpyDeviceToHost);
 
-    std::cout << "CUDA completed" << std::endl;
+    std::cout << "CUDA completed on process " << my_rank << std::endl;
 
     return visibility_map;
 }
