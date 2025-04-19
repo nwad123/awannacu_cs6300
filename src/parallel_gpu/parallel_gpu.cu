@@ -142,10 +142,10 @@ std::vector<unsigned int> calculate_visibility_cuda(
     );
 
     // wait for kernel to finish
-    err = cudaDeviceSynchronize();
+    cudaDeviceSynchronize();
 
     // copy result back to host
-    err = cudaMemcpy(visibility_map.data(), d_visibility_map, visibility_map_size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(visibility_map.data(), d_visibility_map, visibility_map_size, cudaMemcpyDeviceToHost);
 
     std::cout << "CUDA completed" << std::endl;
 
