@@ -100,7 +100,6 @@ std::vector<unsigned int> calculate_visibility_cuda(
 
     // Allocate host result for this process
     std::vector<unsigned int> visibility_map(width * my_height, ~0);
-    fmt::println("{},{},{},a:{}", width, my_height, my_rank, angle);
 
     // Number of discrete angles
     const int num_angles = std::abs(angle);
@@ -148,8 +147,7 @@ std::vector<unsigned int> calculate_visibility_cuda(
               << ", block size: " << block_size.x << "x" << block_size.y
               << " from process " << my_rank << std::endl;
 
-    std::cout << "Offset, process: " << my_y_offset << ", " << my_rank << std::endl;
-
+    fmt::println("width {} height {} radius {} num_angles {} my_y_offset {}", width, height, radius, num_angles, my_y_offset);
     calculate_visibility_kernel<<<grid_size, block_size>>>(
         d_height_map, d_visibility_map, 
         width, height, radius, num_angles, my_y_offset, 
