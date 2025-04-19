@@ -128,6 +128,8 @@ std::vector<unsigned int> calculate_visibility_cuda(
     size_t visibility_map_size = width * my_height * sizeof(unsigned int);
     size_t ray_directions_size = num_angles * sizeof(float);
 
+    fmt::println("rank {} height_map_size {} visibility_map_size {} ray_directions_size {}", my_rank, height_map_size, visibility_map_size, ray_directions_size);
+
     cudaMalloc(&d_height_map, height_map_size);
     cudaMalloc(&d_visibility_map, visibility_map_size);
     cudaMalloc(&d_ray_directions_x, ray_directions_size);
