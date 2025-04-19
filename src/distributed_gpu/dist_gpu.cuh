@@ -11,6 +11,8 @@ __global__ void calculate_visibility_kernel(
     int height,
     int radius,
     int num_angles,
+    int y_offset,
+    int rank,
     float *ray_directions_x,
     float *ray_directions_y
 );
@@ -21,7 +23,7 @@ std::vector<unsigned int> calculate_visibility_cuda(
     size_t height,
     int radius,
     int angle,
-    const int start_row, 
-    const int end_row, 
+    const int start_y, 
+    const int end_y, 
     const int my_rank
 );

@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
     int end_row = start_row + rows_per_proc + (my_rank < remaining_rows ? 1 : 0);
 
     // Calculate local visibility
-    std::vector<unsigned int> local_visibility = calculateVisibilityCuda(
+    std::vector<unsigned int> local_visibility = calculate_visibility_cuda(
         height_map, width, height, RADIUS, angle, start_row, end_row, my_rank);
     
     // Prepare for gathering results

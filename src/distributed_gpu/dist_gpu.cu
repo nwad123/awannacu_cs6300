@@ -3,6 +3,7 @@
 #include <cuda_runtime.h>
 #include <iostream>
 #include <vector>
+#include "fmt/core.h"
 
 __global__ void calculate_visibility_kernel(
     const int16_t *height_map,
@@ -12,6 +13,7 @@ __global__ void calculate_visibility_kernel(
     int radius,
     int num_angles,
     int y_offset,
+    int rank,
     float *ray_directions_x,
     float *ray_directions_y
 )
@@ -79,7 +81,8 @@ __global__ void calculate_visibility_kernel(
     }
 
     // Store the visibility count
-    visibility_map[index] = visible_count;
+    const int visibility_map_index = index - (y_offset * width);
+    visibility_map[visibility_map_index] = visible_count;
 }
 
 std::vector<unsigned int> calculate_visibility_cuda(
@@ -88,17 +91,17 @@ std::vector<unsigned int> calculate_visibility_cuda(
     size_t height,
     int radius,
     int angle,
-    const int start_row, 
-    const int end_row, 
+    const int start_y, 
+    const int end_y, 
     const int my_rank
 )
 {
     // Calculate the width and height of the visibility map for this process
     const auto my_height = end_y - start_y;
-    const auto my_y_offset = start_y * width;
+    const auto my_y_offset = start_y;
 
     // Allocate host result for this process
-    std::vector<unsigned int> visibility_map(width * my_height, 0);
+    std::vector<unsigned int> visibility_map(width * my_height, ~0);
 
     // Number of discrete angles
     const int num_angles = std::abs(angle);
@@ -123,9 +126,9 @@ std::vector<unsigned int> calculate_visibility_cuda(
     float *d_ray_directions_y = nullptr;
 
     // size calculations
-    size_t height_map_size = width * height * sizeof(int16_t);
-    size_t visibility_map_size = width * my_height * sizeof(unsigned int);
-    size_t ray_directions_size = num_angles * sizeof(float);
+    const size_t height_map_size = width * height * sizeof(int16_t);
+    const size_t visibility_map_size = width * my_height * sizeof(unsigned int);
+    const size_t ray_directions_size = num_angles * sizeof(float);
 
     cudaMalloc(&d_height_map, height_map_size);
     cudaMalloc(&d_visibility_map, visibility_map_size);
@@ -139,16 +142,25 @@ std::vector<unsigned int> calculate_visibility_cuda(
 
     // Set up grid and block dimensions
     dim3 block_size(16, 16);
-    dim3 grid_size((width + block_size.x - 1) / block_size.x, (height + block_size.y - 1) / block_size.y);
+    dim3 grid_size((width + block_size.x - 1) / block_size.x, (my_height + block_size.y - 1) / block_size.y);
 
     // Launch kernel
     std::cout << "Launching CUDA kernel with grid size: " << grid_size.x << "x" << grid_size.y
-              << ", block size: " << block_size.x << "x" << block_size.y << 
+              << ", block size: " << block_size.x << "x" << block_size.y
               << " from process " << my_rank << std::endl;
 
     calculate_visibility_kernel<<<grid_size, block_size>>>(
-        d_height_map, d_visibility_map, width, height, radius, num_angles, y_offset, d_ray_directions_x, d_ray_directions_y
+        d_height_map, d_visibility_map, 
+        width, height, radius, num_angles, my_y_offset, 
+        my_rank,
+        d_ray_directions_x, d_ray_directions_y
     );
+
+    // check for errors
+    cudaError_t error = cudaGetLastError();
+    if (error != cudaSuccess) {
+        std::cerr << "CUDA kernel launch failed with error: " << cudaGetErrorString(error) << std::endl;
+    }
 
     // wait for kernel to finish
     cudaDeviceSynchronize();
@@ -156,7 +168,19 @@ std::vector<unsigned int> calculate_visibility_cuda(
     // copy result back to host
     cudaMemcpy(visibility_map.data(), d_visibility_map, visibility_map_size, cudaMemcpyDeviceToHost);
 
-    std::cout << "CUDA completed" << std::endl;
+    // Free device memory
+    cudaFree(d_height_map);
+    cudaFree(d_visibility_map);
+    cudaFree(d_ray_directions_x);
+    cudaFree(d_ray_directions_y);
 
+    // print a sum of the visibility_map for debugging
+    unsigned int sum = 0;
+    for (unsigned int val : visibility_map) {
+        sum += val;
+    }
+    std::cout << "Sum of visibility map on process " << my_rank << ": " << sum << std::endl;
+    std::cout << "CUDA completed on process " << my_rank << std::endl;
+    
     return visibility_map;
 }
