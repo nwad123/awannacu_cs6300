@@ -100,7 +100,7 @@ std::vector<unsigned int> calculate_visibility_cuda(
 
     // Allocate host result for this process
     std::vector<unsigned int> visibility_map(width * my_height, ~0);
-    fmt::println("{},{},{}", width, my_height, my_rank);
+    fmt::println("{},{},{},a:{}", width, my_height, my_rank, angle);
 
     // Number of discrete angles
     const int num_angles = std::abs(angle);
