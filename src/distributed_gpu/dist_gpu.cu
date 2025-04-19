@@ -20,7 +20,7 @@ __global__ void calculate_visibility_kernel(
     int y = (blockIdx.y * blockDim.y + threadIdx.y) + y_offset;
 
     // check bounds
-    if (x >= width || y >= height) { printf("%d,%d\n", x, y); return; }
+    if (x >= width || y >= height) { return; }
 
     const int radius_squared = radius * radius;
     const int index = y * width + x;
@@ -98,7 +98,7 @@ std::vector<unsigned int> calculate_visibility_cuda(
     const auto my_y_offset = start_y;
 
     // Allocate host result for this process
-    std::vector<unsigned int> visibility_map(width * my_height, 0);
+    std::vector<unsigned int> visibility_map(width * my_height, ~0);
 
     // Number of discrete angles
     const int num_angles = std::abs(angle);
