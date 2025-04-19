@@ -14,6 +14,10 @@
 
 int main(int argc, char **argv)
 {
+    if (argc != 6) {
+        fmt::println("Usage: {} <input_file> <output_file> <width> <height> <angle>", argv[0]);
+        return 1;
+    }
 
     std::vector<int16_t> height_map = read_input(argv[1]);
     const size_t width = std::stoul(argv[3]);
