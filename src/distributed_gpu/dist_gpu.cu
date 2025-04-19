@@ -81,7 +81,8 @@ __global__ void calculate_visibility_kernel(
     }
 
     // Store the visibility count
-    visibility_map[index] = visible_count;
+    const int visibility_map_index = index - (y_offset * width);
+    visibility_map[visibility_map_index] = visible_count;
 }
 
 std::vector<unsigned int> calculate_visibility_cuda(

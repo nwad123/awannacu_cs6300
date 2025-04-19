@@ -11,6 +11,8 @@ __global__ void calculate_visibility_kernel(
     int height,
     int radius,
     int num_angles,
+    int y_offset,
+    int rank,
     float *ray_directions_x,
     float *ray_directions_y
 );
