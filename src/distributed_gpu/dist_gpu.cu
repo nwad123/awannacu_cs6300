@@ -143,7 +143,7 @@ std::vector<unsigned int> calculate_visibility_cuda(
 
     // Launch kernel
     std::cout << "Launching CUDA kernel with grid size: " << grid_size.x << "x" << grid_size.y
-              << ", block size: " << block_size.x << "x" << block_size.y << 
+              << ", block size: " << block_size.x << "x" << block_size.y
               << " from process " << my_rank << std::endl;
 
     calculate_visibility_kernel<<<grid_size, block_size>>>(
