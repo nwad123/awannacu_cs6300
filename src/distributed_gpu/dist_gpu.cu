@@ -147,7 +147,9 @@ std::vector<unsigned int> calculate_visibility_cuda(
               << " from process " << my_rank << std::endl;
 
     calculate_visibility_kernel<<<grid_size, block_size>>>(
-        d_height_map, d_visibility_map, width, height, radius, num_angles, y_offset, d_ray_directions_x, d_ray_directions_y
+        d_height_map, d_visibility_map, 
+        width, height, radius, num_angles, my_y_offset, 
+        d_ray_directions_x, d_ray_directions_y
     );
 
     // wait for kernel to finish
