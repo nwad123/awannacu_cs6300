@@ -22,6 +22,9 @@ FetchContent_Declare(
   GIT_TAG        11.1.4)
 FetchContent_MakeAvailable(fmt)
 
+find_package(CUDA REQUIRED)
+enable_language(CUDA)
+
 # Turn on compile commands for IDE support
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
