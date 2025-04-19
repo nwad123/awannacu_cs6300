@@ -80,7 +80,7 @@ __global__ void calculate_visibility_kernel(
         }
     }
 
-    if (my_rank != 0) { printf("Here\n"); }
+    if (rank != 0) { printf("Here\n"); }
 
     // Store the visibility count
     visibility_map[index] = visible_count;
