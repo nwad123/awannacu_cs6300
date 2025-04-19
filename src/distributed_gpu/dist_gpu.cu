@@ -13,6 +13,7 @@ __global__ void calculate_visibility_kernel(
     int radius,
     int num_angles,
     int y_offset,
+    int rank,
     float *ray_directions_x,
     float *ray_directions_y
 )
@@ -78,6 +79,8 @@ __global__ void calculate_visibility_kernel(
             }
         }
     }
+
+    if (my_rank != 0) { printf("Here\n"); }
 
     // Store the visibility count
     visibility_map[index] = visible_count;
@@ -153,6 +156,7 @@ std::vector<unsigned int> calculate_visibility_cuda(
     calculate_visibility_kernel<<<grid_size, block_size>>>(
         d_height_map, d_visibility_map, 
         width, height, radius, num_angles, my_y_offset, 
+        my_rank,
         d_ray_directions_x, d_ray_directions_y
     );
 
