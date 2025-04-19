@@ -80,8 +80,6 @@ __global__ void calculate_visibility_kernel(
         }
     }
 
-    if (rank != 0) { printf("Here\n"); }
-
     // Store the visibility count
     visibility_map[index] = visible_count;
 }
@@ -127,11 +125,9 @@ std::vector<unsigned int> calculate_visibility_cuda(
     float *d_ray_directions_y = nullptr;
 
     // size calculations
-    size_t height_map_size = width * height * sizeof(int16_t);
-    size_t visibility_map_size = width * my_height * sizeof(unsigned int);
-    size_t ray_directions_size = num_angles * sizeof(float);
-
-    fmt::println("rank {} height_map_size {} visibility_map_size {} ray_directions_size {}", my_rank, height_map_size, visibility_map_size, ray_directions_size);
+    const size_t height_map_size = width * height * sizeof(int16_t);
+    const size_t visibility_map_size = width * my_height * sizeof(unsigned int);
+    const size_t ray_directions_size = num_angles * sizeof(float);
 
     cudaMalloc(&d_height_map, height_map_size);
     cudaMalloc(&d_visibility_map, visibility_map_size);
@@ -152,7 +148,6 @@ std::vector<unsigned int> calculate_visibility_cuda(
               << ", block size: " << block_size.x << "x" << block_size.y
               << " from process " << my_rank << std::endl;
 
-    fmt::println("width {} height {} radius {} num_angles {} my_y_offset {}", width, height, radius, num_angles, my_y_offset);
     calculate_visibility_kernel<<<grid_size, block_size>>>(
         d_height_map, d_visibility_map, 
         width, height, radius, num_angles, my_y_offset, 
@@ -166,7 +161,6 @@ std::vector<unsigned int> calculate_visibility_cuda(
         std::cerr << "CUDA kernel launch failed with error: " << cudaGetErrorString(error) << std::endl;
     }
 
-
     // wait for kernel to finish
     cudaDeviceSynchronize();
 
@@ -179,14 +173,12 @@ std::vector<unsigned int> calculate_visibility_cuda(
     cudaFree(d_ray_directions_x);
     cudaFree(d_ray_directions_y);
 
-    // print a sum of the visibility_map
+    // print a sum of the visibility_map for debugging
     unsigned int sum = 0;
     for (unsigned int val : visibility_map) {
         sum += val;
     }
     std::cout << "Sum of visibility map on process " << my_rank << ": " << sum << std::endl;
-
-
     std::cout << "CUDA completed on process " << my_rank << std::endl;
     
     return visibility_map;
