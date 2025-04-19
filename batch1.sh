@@ -4,7 +4,7 @@
 #SBATCH --ntasks 32
 #SBATCH -o slurmjob-%j.out-%N
 #SBATCH -e slurmjob-%j.err-%N
-#SBATCH --account=u0420314
+#SBATCH --account=usucs5030
 #SBATCH --partition=kingspeak
 #SBATCH --mail-user=nick.waddoups@usu.edu
 #SBATCH --mail-type=FAIL,BEGIN,END
