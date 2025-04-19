@@ -59,5 +59,6 @@ CMakeUserPresets.json
 *.ilk
 *.cmake
 
+*.tiff
 *.raw
 __pycache__/*
