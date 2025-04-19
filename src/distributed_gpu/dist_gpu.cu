@@ -95,7 +95,7 @@ std::vector<unsigned int> calculate_visibility_cuda(
 {
     // Calculate the width and height of the visibility map for this process
     const auto my_height = end_y - start_y;
-    const auto my_y_offset = start_y * width;
+    const auto my_y_offset = start_y;
 
     // Allocate host result for this process
     std::vector<unsigned int> visibility_map(width * my_height, 0);
