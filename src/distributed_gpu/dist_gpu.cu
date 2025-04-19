@@ -18,7 +18,6 @@ __global__ void calculate_visibility_kernel(
 {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = (blockIdx.y * blockDim.y + threadIdx.y) + y_offset;
-    if (x == 0 ) {printf("x,y: %d,%d\n", x, y);}
 
     // check bounds
     if (x >= width || y >= height) { return; }
