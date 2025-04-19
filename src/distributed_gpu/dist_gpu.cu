@@ -3,6 +3,7 @@
 #include <cuda_runtime.h>
 #include <iostream>
 #include <vector>
+#include "fmt/core.h"
 
 __global__ void calculate_visibility_kernel(
     const int16_t *height_map,
@@ -99,6 +100,7 @@ std::vector<unsigned int> calculate_visibility_cuda(
 
     // Allocate host result for this process
     std::vector<unsigned int> visibility_map(width * my_height, ~0);
+    fmt::println("{},{},{}", width, my_height, my_rank);
 
     // Number of discrete angles
     const int num_angles = std::abs(angle);
