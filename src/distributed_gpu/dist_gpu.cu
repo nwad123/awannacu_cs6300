@@ -154,6 +154,13 @@ std::vector<unsigned int> calculate_visibility_cuda(
         d_ray_directions_x, d_ray_directions_y
     );
 
+    // check for errors
+    cudaError_t error = cudaGetLastError();
+    if (error != cudaSuccess) {
+        std::cerr << "CUDA kernel launch failed with error: " << cudaGetErrorString(error) << std::endl;
+    }
+
+
     // wait for kernel to finish
     cudaDeviceSynchronize();
 
