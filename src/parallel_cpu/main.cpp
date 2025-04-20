@@ -31,7 +31,9 @@ int main(int argc, char** argv) {
     
 #ifdef _OMP
     // set the number of threads to use
-    omp_set_num_threads(std::stoi(argv[6]));
+    const auto num_threads = std::stoi(argv[6]);
+    omp_set_num_threads(num_threads);
+    fmt::println("Set number of threads to {}", num_threads);
 #endif
 
     // Parse width and height from command line
