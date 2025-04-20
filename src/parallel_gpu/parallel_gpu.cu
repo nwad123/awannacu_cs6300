@@ -85,6 +85,8 @@ std::vector<unsigned int> calculate_visibility_cuda(
     const std::vector<int16_t> &height_map,
     size_t width,
     size_t height,
+    size_t custom_grid_size,
+    size_t custom_tile_size,
     int radius,
     int angle
 )
@@ -130,8 +132,8 @@ std::vector<unsigned int> calculate_visibility_cuda(
     cudaMemcpy(d_ray_directions_y, ray_directions_y.data(), ray_directions_size, cudaMemcpyHostToDevice);
 
     // Set up grid and block dimensions
-    dim3 block_size(16, 16);
-    dim3 grid_size((width + block_size.x - 1) / block_size.x, (height + block_size.y - 1) / block_size.y);
+    dim3 block_size(custom_tile_size, custom_tile_size);
+    dim3 grid_size(custom_grid_size, custom_grid_size);
 
     // Launch kernel
     std::cout << "Launching CUDA kernel with grid size: " << grid_size.x << "x" << grid_size.y
