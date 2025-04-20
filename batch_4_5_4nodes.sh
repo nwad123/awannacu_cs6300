@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --time=00:01:00
+#SBATCH --time=00:20:00
 #SBATCH --nodes=4
 #SBATCH --ntasks 32
 #SBATCH -o slurmjob-%j.out-%N
 #SBATCH -e slurmjob-%j.err-%N
 #SBATCH --account=usucs5030
-#SBATCH --partition=kingspeak-shared
+#SBATCH --partition=kingspeak
 #SBATCH --mail-user=nick.waddoups@usu.edu
 #SBATCH --mail-type=FAIL,BEGIN,END
 
@@ -18,7 +18,8 @@ module load cmake/3.26.0 gcc/11.2.0 cuda openmpi/5.0.3
 cd ~/awannacu_cs6300
 
 # build the project
-make clean && make
+make clean
+make
 
 # run cpu
 mpiexec -n 16 ./build/src/distributed_cpu/dist_cpu input.raw output.raw 6000 6000 36
