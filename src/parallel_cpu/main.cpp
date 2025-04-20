@@ -18,9 +18,9 @@
 
 #include "parallel_cpu.hpp"
 
-#ifdef _OPENMP 
+// #ifdef _OPENMP 
     #include <omp.h>
-#endif
+// #endif
 
 int main(int argc, char** argv) {
     // Usage: ./<exec> <read_file> <write_file> <width> <height>
@@ -29,12 +29,12 @@ int main(int argc, char** argv) {
         return 1;
     }
     
-#ifdef _OMP
+// #ifdef _OMP
     // set the number of threads to use
     const auto num_threads = std::stoi(argv[6]);
     omp_set_num_threads(num_threads);
     fmt::println("Set number of threads to {}", num_threads);
-#endif
+// #endif
 
     // Parse width and height from command line
     const size_t width = std::stoul(argv[3]);
