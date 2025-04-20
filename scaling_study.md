@@ -19,6 +19,17 @@ See the [README](./README.md) on our Github page for instructions on how to buil
 
 ### Shared Memory Serial vs. Parallel Execution
 
+For this we ran `./build/src/parallel_cpu/par_cpu input.raw output.raw 6000 6000 36 n`, where `n` was the
+number of specified threads. We used the `lonepeak` CHPC cluster to do these tests, and we used the
+following parameters:
+
+- Nodes: 1
+- Tasks: 32
+
+| Threads | Time (ms) |
+|:----:|:----:|
+| 1 | 88044 ms |
+
 ![Distributed cpu vs. gpu]()
 
 ### Single GPU Execution
