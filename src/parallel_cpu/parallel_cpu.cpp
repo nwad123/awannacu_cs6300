@@ -32,15 +32,9 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
     
     // Process each pixel
     //use parallel cpu with opeMP
-#pragma omp parallel for collapse(2) schedule(dynamic, 1)
+#pragma omp parallel for collapse(2)
     for (size_t y = 0; y < height; ++y) {
         for (size_t x = 0; x < width; ++x) {
-            // Print progress more frequently
-            if ((y * width + x) % 1000 == 0) {
-                std::cout << "\rProgress: " << (static_cast<float>(y * width + x) / (width * height)) * 100 << "%";
-                std::cout.flush();
-            }
-            
             unsigned short current_height = height_map[y * width + x];
             
             // Start the count at this cell as 1 (the pixel itself is always visible)
@@ -102,8 +96,6 @@ auto calculateVisibility(const std::vector<int16_t>& height_map,
             visibility_map[y * width + x] = visible_count;
         }
     }
-    
-    std::cout << "\rProgress: 100% " << std::endl;
 
     return visibility_map;
 }
