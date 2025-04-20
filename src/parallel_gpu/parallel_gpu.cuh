@@ -19,6 +19,8 @@ std::vector<unsigned int> calculate_visibility_cuda(
     const std::vector<int16_t> &height_map,
     size_t width,
     size_t height,
+    size_t grid_size,
+    size_t tile_size,
     int radius,
     int angle
 );

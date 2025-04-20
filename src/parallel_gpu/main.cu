@@ -14,21 +14,24 @@
 
 int main(int argc, char **argv)
 {
-    if (argc != 6) {
-        fmt::println("Usage: {} <input_file> <output_file> <width> <height> <angle>", argv[0]);
+    if (argc != 8) {
+        fmt::println("Usage: {} <input_file> <output_file> <width> <height> <grid_size> <tile_size> <angle>", argv[0]);
         return 1;
     }
 
     std::vector<int16_t> height_map = read_input(argv[1]);
     const size_t width = std::stoul(argv[3]);
     const size_t height = std::stoul(argv[4]);
-    const int angle = std::stoi(argv[5]);
+    const size_t grid_size = std::stoul(argv[5]);
+    const size_t tile_size = std::stoul(argv[6]);
+    const int angle = std::stoi(argv[7]);
 
     timer time;
     time.reset();
 
     int radius = 100;
-    std::vector<unsigned int> visibility_map = calculate_visibility_cuda(height_map, width, height, radius, angle);
+    std::vector<unsigned int> visibility_map =
+        calculate_visibility_cuda(height_map, width, height, grid_size, tile_size, radius, angle);
 
     fmt::println("Elapsed time: {} ms", time.read());
 
