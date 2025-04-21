@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdint>
 #include <tuple>
+#include "core.hpp"
 
 /// @brief Parses the command line arguments
 /// @param argc argc from main
