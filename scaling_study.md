@@ -24,18 +24,43 @@ number of specified threads. We used the `lonepeak` CHPC cluster to do these tes
 following parameters:
 
 - Nodes: 1
-- Tasks: 32
+- Tasks: 16
 
 | Threads | Time (ms) |
-|:----:|:----:|
-| 1 | 88044 ms |
+|:----:|:----------:|
+|    1 | 1028290 ms |
+|    2 | 562589 ms  |
+|    4 | 310068 ms  |
+|    8 | 186566 ms  |
+|   16 | 138344 ms  |
+|   32 | 125590 ms  |
 
-![Distributed cpu vs. gpu]()
+![Shared Memory Scaling](plots/shared_mem.png)
 
 ### Single GPU Execution
 
-![Distributed cpu vs. gpu]()
+| Block Size | Grid Size | Time (ms) |
+|:---:|:---:|:---:|
+| 8x8 | 8x8 | 655 ms|
+| 8x8 | 16x16 | 573 ms|
+| 8x8 | 32x32 | 588 ms|
+| 16x16 | 8x8 | 579 ms|
+| 16x16 | 16x16 | 566 ms|
+| 16x16 | 32x32 | 561 ms|
+| 32x32 | 8x8 | 560 ms|
+| 32x32 | 16x16 | 563 ms|
+| 32x32 | 32x32 | 593 ms|
+| 64x64 | 8x8 | 569 ms|
+| 64x64 | 16x16 | 571 ms|
+| 128x128 | 8x8 | 577 ms|
+
+![Parallel GPU Execution](plots/par_gpu.png)
 
 ### Distributed CPU vs. GPU Execution
 
-![Distributed cpu vs. gpu]()
+| Processes | Time (ms) |
+|:---:|:---:|
+| 8 |  326303 ms |
+| 4 |  614851 ms |
+
+![Distributed cpu](plots/dist_cpu.png)
