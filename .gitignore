@@ -62,3 +62,4 @@ CMakeUserPresets.json
 *.tiff
 *.raw
 __pycache__/*
+*.tar
